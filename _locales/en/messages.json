@@ -1,0 +1,53 @@
+{
+  "extDescription": {
+    "message": "Capture the visible browser tab in one click and stack it locally for any MCP-capable LLM client.",
+    "description": "Extension description shown in the browser store and the extensions page."
+  },
+  "toolbarDeleteAll": {
+    "message": "Delete all",
+    "description": "Toolbar button: delete every capture."
+  },
+  "toolbarOpenFolder": {
+    "message": "Open folder",
+    "description": "Toolbar button: open the stack folder in the OS file manager."
+  },
+  "toolbarCopyAll": {
+    "message": "Copy all paths",
+    "description": "Toolbar button: copy every capture's absolute path."
+  },
+  "toolbarCapture": {
+    "message": "Capture",
+    "description": "Toolbar button: capture the current tab."
+  },
+  "itemDelete": {
+    "message": "Delete",
+    "description": "Per-image control: delete this capture."
+  },
+  "itemCopyPath": {
+    "message": "Copy path",
+    "description": "Per-image control: copy this capture's absolute path."
+  },
+  "confirmDeleteAll": {
+    "message": "Delete all captures?",
+    "description": "Confirmation dialog before deleting everything."
+  },
+  "confirmDeleteOne": {
+    "message": "Delete this capture?",
+    "description": "Confirmation dialog before deleting one capture."
+  },
+  "stackEmpty": {
+    "message": "Stack is empty.",
+    "description": "Empty-state message in the dropdown."
+  },
+  "serverNotRunning": {
+    "message": "snapstack server is not running (http://127.0.0.1:4123).",
+    "description": "Shown when the local server cannot be reached."
+  },
+  "captureFailed": {
+    "message": "Capture failed: $error$",
+    "description": "Notification when a capture fails for a reason other than the server being down.",
+    "placeholders": {
+      "error": { "content": "$1", "example": "server responded 500" }
+    }
+  }
+}

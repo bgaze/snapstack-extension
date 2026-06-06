@@ -1,0 +1,19 @@
+{
+  "extDescription": {
+    "message": "Erfassen Sie den sichtbaren Browser-Tab mit einem Klick und legen Sie ihn lokal für jeden MCP-fähigen LLM-Client ab."
+  },
+  "toolbarDeleteAll": { "message": "Alle löschen" },
+  "toolbarOpenFolder": { "message": "Ordner öffnen" },
+  "toolbarCopyAll": { "message": "Alle Pfade kopieren" },
+  "toolbarCapture": { "message": "Aufnehmen" },
+  "itemDelete": { "message": "Löschen" },
+  "itemCopyPath": { "message": "Pfad kopieren" },
+  "confirmDeleteAll": { "message": "Alle Aufnahmen löschen?" },
+  "confirmDeleteOne": { "message": "Diese Aufnahme löschen?" },
+  "stackEmpty": { "message": "Stapel ist leer." },
+  "serverNotRunning": { "message": "Der snapstack-Server läuft nicht (http://127.0.0.1:4123)." },
+  "captureFailed": {
+    "message": "Aufnahme fehlgeschlagen: $error$",
+    "placeholders": { "error": { "content": "$1" } }
+  }
+}

@@ -1,0 +1,197 @@
+'use strict';
+
+// Cross-browser namespace: Firefox exposes `browser` (promises), Chrome/Edge
+// expose `chrome` (MV3 APIs also return promises when no callback is passed).
+const api = globalThis.browser ?? globalThis.chrome;
+
+const DEFAULTS = {
+  serverBase: 'http://127.0.0.1:4123',
+  format: 'webp', // 'webp' | 'png'
+  quality: 0.85, // lossy quality for webp/jpeg
+  maxEdge: 1568, // downscale the longest edge to this many px (0 = no downscale)
+};
+
+const COLOR_IDLE = '#4F46E5';
+const COLOR_OK = '#16A34A';
+const COLOR_ERR = '#DC2626';
+
+async function getConfig() {
+  try {
+    const stored = await api.storage?.local.get(DEFAULTS);
+    return { ...DEFAULTS, ...stored };
+  } catch {
+    return { ...DEFAULTS };
+  }
+}
+
+// --- badge ----------------------------------------------------------------
+async function setBadge(text, color) {
+  try {
+    await api.action.setBadgeText({ text });
+    if (color) await api.action.setBadgeBackgroundColor({ color });
+  } catch {
+    /* action API unavailable mid-teardown */
+  }
+}
+
+async function refreshBadge(cfg) {
+  try {
+    const r = await fetch(`${cfg.serverBase}/count`);
+    const { count } = await r.json();
+    await setBadge(count > 0 ? String(count) : '', COLOR_IDLE);
+  } catch {
+    await setBadge('!', COLOR_ERR); // server unreachable
+  }
+}
+
+// Pull the current count from the server and reflect it on the badge.
+function syncBadge() {
+  return getConfig().then(refreshBadge);
+}
+
+// --- capture pipeline -----------------------------------------------------
+async function dataUrlToBitmap(dataUrl) {
+  const blob = await (await fetch(dataUrl)).blob();
+  return createImageBitmap(blob);
+}
+
+async function encode(bitmap, cfg) {
+  let { width, height } = bitmap;
+  if (cfg.maxEdge > 0) {
+    const longest = Math.max(width, height);
+    if (longest > cfg.maxEdge) {
+      const scale = cfg.maxEdge / longest;
+      width = Math.round(width * scale);
+      height = Math.round(height * scale);
+    }
+  }
+
+  const canvas = new OffscreenCanvas(width, height);
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(bitmap, 0, 0, width, height);
+
+  // Try the requested format; fall back to PNG if the browser cannot encode it
+  // (notably WebP encoding on some Firefox versions).
+  let mimeType = cfg.format === 'png' ? 'image/png' : 'image/webp';
+  let blob = await canvas.convertToBlob({ type: mimeType, quality: cfg.quality });
+  if (blob.type !== mimeType) {
+    mimeType = 'image/png';
+    blob = await canvas.convertToBlob({ type: 'image/png' });
+  }
+  return { blob, mimeType };
+}
+
+async function capture() {
+  const cfg = await getConfig();
+
+  const [tab] = await api.tabs.query({ active: true, currentWindow: true });
+  if (!tab) throw new Error('no active tab');
+
+  const dataUrl = await api.tabs.captureVisibleTab(tab.windowId, { format: 'png' });
+  const bitmap = await dataUrlToBitmap(dataUrl);
+  const { blob, mimeType } = await encode(bitmap, cfg);
+  bitmap.close?.();
+
+  const body = await blob.arrayBuffer();
+  const resp = await fetch(`${cfg.serverBase}/push`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': mimeType,
+      'X-Snapstack-Url': encodeURIComponent(tab.url ?? ''),
+      'X-Snapstack-Title': encodeURIComponent(tab.title ?? ''),
+    },
+    body,
+  });
+  if (!resp.ok) throw new Error(`server responded ${resp.status}`);
+  const { count } = await resp.json();
+  return count;
+}
+
+// --- feedback -------------------------------------------------------------
+function flashOk(count) {
+  setBadge('✓', COLOR_OK);
+  setTimeout(() => setBadge(count > 0 ? String(count) : '', COLOR_IDLE), 600);
+}
+
+async function notifyError(err) {
+  const raw = String(err?.message || err);
+  const unreachable = /Failed to fetch|NetworkError|ECONNREFUSED/i.test(raw);
+  const message = unreachable
+    ? api.i18n.getMessage('serverNotRunning')
+    : api.i18n.getMessage('captureFailed', [raw]);
+  try {
+    await api.notifications.create({
+      type: 'basic',
+      iconUrl: api.runtime.getURL('icons/icon-128.png'),
+      title: 'snapstack',
+      message,
+    });
+  } catch {
+    /* notifications unavailable */
+  }
+  await setBadge('!', COLOR_ERR);
+}
+
+async function onTrigger() {
+  try {
+    const count = await capture();
+    flashOk(count);
+    return { ok: true, count };
+  } catch (e) {
+    await notifyError(e);
+    return { ok: false, error: String(e?.message || e) };
+  }
+}
+
+// --- server mutations (delegated by the popup) ----------------------------
+// Run here, not in the popup: a native confirm() or a new tab closes the popup,
+// and an in-flight fetch in a torn-down popup may be aborted. The worker is not
+// tied to the popup lifecycle, so the operation always completes.
+async function serverOp(method, path) {
+  const cfg = await getConfig();
+  try {
+    const r = await fetch(`${cfg.serverBase}${path}`, { method });
+    await refreshBadge(cfg);
+    return { ok: r.ok };
+  } catch (e) {
+    return { ok: false, error: String(e?.message || e) };
+  }
+}
+
+// --- wiring (listeners registered synchronously at worker startup) --------
+// The toolbar action opens the popup (default_popup), so there is no
+// action.onClicked path. The popup drives capture and stack mutations by message.
+api.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+  switch (msg?.type) {
+    case 'capture':
+      onTrigger().then(sendResponse);
+      return true;
+    case 'clear':
+      serverOp('POST', '/clear').then(sendResponse);
+      return true;
+    case 'delete':
+      serverOp('DELETE', `/file/${encodeURIComponent(msg.name)}`).then(sendResponse);
+      return true;
+    case 'reveal':
+      serverOp('POST', '/reveal').then(sendResponse);
+      return true;
+    default:
+      return false;
+  }
+});
+
+// The stack can be drained server-side by the MCP client (get/clear), and the
+// server has no channel to push to the extension. Resync the badge on the
+// moments the user is likely to look at it — switching tab, refocusing the
+// browser — plus a periodic alarm as an idle self-heal.
+api.tabs.onActivated.addListener(syncBadge);
+api.windows?.onFocusChanged.addListener((windowId) => {
+  if (windowId !== api.windows.WINDOW_ID_NONE) syncBadge();
+});
+api.alarms.create('snapstack-sync', { periodInMinutes: 1 });
+api.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === 'snapstack-sync') syncBadge();
+});
+
+// Sync once when the worker/event page spins up.
+syncBadge();

@@ -1,0 +1,19 @@
+{
+  "extDescription": {
+    "message": "Capture a aba visível do navegador com um clique e empilhe-a localmente para qualquer cliente LLM compatível com MCP."
+  },
+  "toolbarDeleteAll": { "message": "Excluir tudo" },
+  "toolbarOpenFolder": { "message": "Abrir pasta" },
+  "toolbarCopyAll": { "message": "Copiar todos os caminhos" },
+  "toolbarCapture": { "message": "Capturar" },
+  "itemDelete": { "message": "Excluir" },
+  "itemCopyPath": { "message": "Copiar caminho" },
+  "confirmDeleteAll": { "message": "Excluir todas as capturas?" },
+  "confirmDeleteOne": { "message": "Excluir esta captura?" },
+  "stackEmpty": { "message": "A pilha está vazia." },
+  "serverNotRunning": { "message": "O servidor snapstack não está em execução (http://127.0.0.1:4123)." },
+  "captureFailed": {
+    "message": "Falha na captura: $error$",
+    "placeholders": { "error": { "content": "$1" } }
+  }
+}

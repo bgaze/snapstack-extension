@@ -1,0 +1,19 @@
+{
+  "extDescription": {
+    "message": "一键截取浏览器当前可见标签页并在本地堆叠，供任何支持 MCP 的 LLM 客户端使用。"
+  },
+  "toolbarDeleteAll": { "message": "全部删除" },
+  "toolbarOpenFolder": { "message": "打开文件夹" },
+  "toolbarCopyAll": { "message": "复制所有路径" },
+  "toolbarCapture": { "message": "截图" },
+  "itemDelete": { "message": "删除" },
+  "itemCopyPath": { "message": "复制路径" },
+  "confirmDeleteAll": { "message": "删除所有截图？" },
+  "confirmDeleteOne": { "message": "删除此截图？" },
+  "stackEmpty": { "message": "堆栈为空。" },
+  "serverNotRunning": { "message": "snapstack 服务器未运行 (http://127.0.0.1:4123)。" },
+  "captureFailed": {
+    "message": "截图失败：$error$",
+    "placeholders": { "error": { "content": "$1" } }
+  }
+}

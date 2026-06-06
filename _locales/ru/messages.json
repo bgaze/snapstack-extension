@@ -1,0 +1,19 @@
+{
+  "extDescription": {
+    "message": "Снимок видимой вкладки браузера одним щелчком и локальное накопление для любого LLM-клиента с поддержкой MCP."
+  },
+  "toolbarDeleteAll": { "message": "Удалить все" },
+  "toolbarOpenFolder": { "message": "Открыть папку" },
+  "toolbarCopyAll": { "message": "Копировать все пути" },
+  "toolbarCapture": { "message": "Снимок" },
+  "itemDelete": { "message": "Удалить" },
+  "itemCopyPath": { "message": "Копировать путь" },
+  "confirmDeleteAll": { "message": "Удалить все снимки?" },
+  "confirmDeleteOne": { "message": "Удалить этот снимок?" },
+  "stackEmpty": { "message": "Стек пуст." },
+  "serverNotRunning": { "message": "Сервер snapstack не запущен (http://127.0.0.1:4123)." },
+  "captureFailed": {
+    "message": "Не удалось сделать снимок: $error$",
+    "placeholders": { "error": { "content": "$1" } }
+  }
+}
