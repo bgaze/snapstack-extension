@@ -6,12 +6,14 @@
   "toolbarOpenFolder": { "message": "Apri cartella" },
   "toolbarCopyAll": { "message": "Copia tutti i percorsi" },
   "toolbarCapture": { "message": "Cattura" },
+  "toolbarCaptureZone": { "message": "Cattura area" },
   "itemDelete": { "message": "Elimina" },
   "itemCopyPath": { "message": "Copia percorso" },
   "confirmDeleteAll": { "message": "Eliminare tutte le catture?" },
   "confirmDeleteOne": { "message": "Eliminare questa cattura?" },
   "stackEmpty": { "message": "La pila è vuota." },
   "serverNotRunning": { "message": "Il server snapstack non è in esecuzione (http://127.0.0.1:4123)." },
+  "zoneUnavailable": { "message": "La cattura dell'area non è disponibile in questa pagina." },
   "captureFailed": {
     "message": "Cattura non riuscita: $error$",
     "placeholders": { "error": { "content": "$1" } }

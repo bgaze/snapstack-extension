@@ -6,12 +6,14 @@
   "toolbarOpenFolder": { "message": "フォルダーを開く" },
   "toolbarCopyAll": { "message": "すべてのパスをコピー" },
   "toolbarCapture": { "message": "キャプチャ" },
+  "toolbarCaptureZone": { "message": "範囲をキャプチャ" },
   "itemDelete": { "message": "削除" },
   "itemCopyPath": { "message": "パスをコピー" },
   "confirmDeleteAll": { "message": "すべてのキャプチャを削除しますか？" },
   "confirmDeleteOne": { "message": "このキャプチャを削除しますか？" },
   "stackEmpty": { "message": "スタックは空です。" },
   "serverNotRunning": { "message": "snapstack サーバーが起動していません (http://127.0.0.1:4123)。" },
+  "zoneUnavailable": { "message": "このページでは範囲キャプチャを利用できません。" },
   "captureFailed": {
     "message": "キャプチャに失敗しました: $error$",
     "placeholders": { "error": { "content": "$1" } }

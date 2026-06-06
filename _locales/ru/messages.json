@@ -6,12 +6,14 @@
   "toolbarOpenFolder": { "message": "Открыть папку" },
   "toolbarCopyAll": { "message": "Копировать все пути" },
   "toolbarCapture": { "message": "Снимок" },
+  "toolbarCaptureZone": { "message": "Снимок области" },
   "itemDelete": { "message": "Удалить" },
   "itemCopyPath": { "message": "Копировать путь" },
   "confirmDeleteAll": { "message": "Удалить все снимки?" },
   "confirmDeleteOne": { "message": "Удалить этот снимок?" },
   "stackEmpty": { "message": "Стек пуст." },
   "serverNotRunning": { "message": "Сервер snapstack не запущен (http://127.0.0.1:4123)." },
+  "zoneUnavailable": { "message": "Снимок области недоступен на этой странице." },
   "captureFailed": {
     "message": "Не удалось сделать снимок: $error$",
     "placeholders": { "error": { "content": "$1" } }

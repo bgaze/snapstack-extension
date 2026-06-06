@@ -6,12 +6,14 @@
   "toolbarOpenFolder": { "message": "Ouvrir le dossier" },
   "toolbarCopyAll": { "message": "Copier tous les chemins" },
   "toolbarCapture": { "message": "Capturer" },
+  "toolbarCaptureZone": { "message": "Capturer une zone" },
   "itemDelete": { "message": "Supprimer" },
   "itemCopyPath": { "message": "Copier le chemin" },
   "confirmDeleteAll": { "message": "Supprimer toutes les captures ?" },
   "confirmDeleteOne": { "message": "Supprimer cette capture ?" },
   "stackEmpty": { "message": "Pile vide." },
   "serverNotRunning": { "message": "Le serveur snapstack n'est pas démarré (http://127.0.0.1:4123)." },
+  "zoneUnavailable": { "message": "La capture de zone n'est pas disponible sur cette page." },
   "captureFailed": {
     "message": "Échec de la capture : $error$",
     "placeholders": { "error": { "content": "$1" } }

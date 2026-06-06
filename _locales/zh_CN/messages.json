@@ -6,12 +6,14 @@
   "toolbarOpenFolder": { "message": "打开文件夹" },
   "toolbarCopyAll": { "message": "复制所有路径" },
   "toolbarCapture": { "message": "截图" },
+  "toolbarCaptureZone": { "message": "截取区域" },
   "itemDelete": { "message": "删除" },
   "itemCopyPath": { "message": "复制路径" },
   "confirmDeleteAll": { "message": "删除所有截图？" },
   "confirmDeleteOne": { "message": "删除此截图？" },
   "stackEmpty": { "message": "堆栈为空。" },
   "serverNotRunning": { "message": "snapstack 服务器未运行 (http://127.0.0.1:4123)。" },
+  "zoneUnavailable": { "message": "此页面无法使用区域截图。" },
   "captureFailed": {
     "message": "截图失败：$error$",
     "placeholders": { "error": { "content": "$1" } }

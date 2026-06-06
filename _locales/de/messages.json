@@ -6,12 +6,14 @@
   "toolbarOpenFolder": { "message": "Ordner öffnen" },
   "toolbarCopyAll": { "message": "Alle Pfade kopieren" },
   "toolbarCapture": { "message": "Aufnehmen" },
+  "toolbarCaptureZone": { "message": "Bereich aufnehmen" },
   "itemDelete": { "message": "Löschen" },
   "itemCopyPath": { "message": "Pfad kopieren" },
   "confirmDeleteAll": { "message": "Alle Aufnahmen löschen?" },
   "confirmDeleteOne": { "message": "Diese Aufnahme löschen?" },
   "stackEmpty": { "message": "Stapel ist leer." },
   "serverNotRunning": { "message": "Der snapstack-Server läuft nicht (http://127.0.0.1:4123)." },
+  "zoneUnavailable": { "message": "Bereichsaufnahme ist auf dieser Seite nicht verfügbar." },
   "captureFailed": {
     "message": "Aufnahme fehlgeschlagen: $error$",
     "placeholders": { "error": { "content": "$1" } }
