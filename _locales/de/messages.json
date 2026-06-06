@@ -17,5 +17,6 @@
   "captureFailed": {
     "message": "Aufnahme fehlgeschlagen: $error$",
     "placeholders": { "error": { "content": "$1" } }
-  }
+  },
+  "serverOutdated": { "message": "Der snapstack-Server ist veraltet – bitte aktualisieren Sie ihn." }
 }

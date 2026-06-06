@@ -14,6 +14,14 @@ const DEFAULTS = {
 const COLOR_IDLE = '#4F46E5';
 const COLOR_OK = '#16A34A';
 const COLOR_ERR = '#DC2626';
+const COLOR_WARN = '#D97706'; // amber: server reachable but its protocol is behind us
+
+// Wire protocol this extension speaks; the server advertises its own on /health.
+// If the server's protocol is older — or absent, i.e. a pre-handshake server — it
+// can't be trusted to understand what we send, so we nudge the user to update it
+// (the server and the extension update on different channels, so they can drift).
+// Bump in lock-step with the server's PROTOCOL_VERSION on a breaking /push change.
+const CLIENT_PROTOCOL = 1;
 
 async function getConfig() {
   try {
@@ -44,9 +52,51 @@ async function refreshBadge(cfg) {
   }
 }
 
-// Pull the current count from the server and reflect it on the badge.
-function syncBadge() {
-  return getConfig().then(refreshBadge);
+// Compare the server's advertised wire protocol against ours. Returns
+// 'unreachable' | 'outdated' | 'ok', and persists the verdict (so the popup can
+// surface it) plus fires a one-shot notification on the transition to outdated.
+async function checkCompat(cfg) {
+  let health;
+  try {
+    const r = await fetch(`${cfg.serverBase}/health`);
+    if (!r.ok) throw new Error(String(r.status));
+    health = await r.json();
+  } catch {
+    return 'unreachable';
+  }
+  // A server with no `protocol` predates the handshake → it is behind this extension.
+  const ok = typeof health.protocol === 'number' && health.protocol >= CLIENT_PROTOCOL;
+  await setCompat(ok ? null : 'outdated');
+  return ok ? 'ok' : 'outdated';
+}
+
+// Persist the compatibility verdict (null = compatible) and notify once per
+// transition — not on every 1-minute sync.
+async function setCompat(reason) {
+  let prev = null;
+  try {
+    ({ serverCompat: prev = null } = await api.storage.local.get('serverCompat'));
+  } catch {
+    /* storage unavailable */
+  }
+  if ((reason ?? null) === (prev ?? null)) return; // no transition
+  try {
+    await api.storage.local.set({ serverCompat: reason });
+  } catch {
+    /* storage unavailable */
+  }
+  if (reason === 'outdated') await showNotification(api.i18n.getMessage('serverOutdated'));
+}
+
+// Reflect server state on the badge: an out-of-date server gets a distinct amber
+// warning (capture is never blocked — we still try /push), unreachable gets the
+// red error mark, otherwise the pending count.
+async function syncBadge() {
+  const cfg = await getConfig();
+  const compat = await checkCompat(cfg);
+  if (compat === 'unreachable') return setBadge('!', COLOR_ERR);
+  if (compat === 'outdated') return setBadge('⚠', COLOR_WARN);
+  return refreshBadge(cfg);
 }
 
 // --- capture pipeline -----------------------------------------------------

@@ -17,5 +17,6 @@
   "captureFailed": {
     "message": "Falha na captura: $error$",
     "placeholders": { "error": { "content": "$1" } }
-  }
+  },
+  "serverOutdated": { "message": "O servidor snapstack está desatualizado — atualize-o." }
 }

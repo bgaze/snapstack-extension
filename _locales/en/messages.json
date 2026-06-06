@@ -57,5 +57,9 @@
     "placeholders": {
       "error": { "content": "$1", "example": "server responded 500" }
     }
+  },
+  "serverOutdated": {
+    "message": "The snapstack server is out of date — please update it.",
+    "description": "Notification + popup banner when the server's wire protocol is older than the extension (version skew)."
   }
 }

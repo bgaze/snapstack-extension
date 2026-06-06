@@ -219,7 +219,28 @@ async function load() {
   renderGrid(items);
 }
 
+// Surface the version-skew nudge the background worker persists: an amber banner
+// when the server's protocol is behind this extension (see background.js checkCompat).
+async function showCompatBanner() {
+  const banner = document.getElementById('banner');
+  if (!banner) return;
+  let reason = null;
+  try {
+    const stored = await api.storage?.local.get('serverCompat');
+    reason = stored?.serverCompat ?? null;
+  } catch {
+    /* storage unavailable */
+  }
+  if (reason === 'outdated') {
+    banner.textContent = t('serverOutdated');
+    banner.hidden = false;
+  } else {
+    banner.hidden = true;
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   buildToolbar();
   load();
+  showCompatBanner();
 });

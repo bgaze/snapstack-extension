@@ -169,6 +169,16 @@ button.icon.ok {
   border-color: #16a34a;
 }
 
+/* Version-skew nudge: server reachable but its protocol is behind the extension. */
+.banner {
+  padding: 8px 12px;
+  font-size: 12px;
+  text-align: center;
+  color: #92400e;
+  background: #fef3c7;
+  border-bottom: 1px solid #fcd34d;
+}
+
 .message {
   padding: 36px 12px;
   text-align: center;
