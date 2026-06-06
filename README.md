@@ -4,6 +4,9 @@
 
 <p align="center">
   <a href="https://github.com/bgaze/snapstack-extension/actions/workflows/ci.yml"><img src="https://github.com/bgaze/snapstack-extension/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/bgaze/snapstack-extension?color=blue" alt="License: MIT"></a>
+  <a href="https://modelcontextprotocol.io"><img src="https://img.shields.io/badge/MCP-compatible-blueviolet" alt="MCP compatible"></a>
+  <img src="https://img.shields.io/badge/100%25-local-success" alt="100% local">
 </p>
 
 <p align="center">
