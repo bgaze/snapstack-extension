@@ -23,6 +23,10 @@
     margin: '0',
     zIndex: '2147483647',
     cursor: 'crosshair',
+    // Dim the whole viewport the instant the overlay appears, so it reads as
+    // "selection mode" before any drag. Once dragging starts this is dropped
+    // and the rectangle's box-shadow takes over, leaving the selection clear.
+    background: 'rgba(0, 0, 0, 0.4)',
   });
 
   // The selection rectangle: a transparent box whose huge box-shadow dims
@@ -103,6 +107,9 @@
     dragging = true;
     startX = e.clientX;
     startY = e.clientY;
+    // Hand the dim over to the rectangle's box-shadow so the selection itself
+    // stays clear (the root's full-screen dim would otherwise cover it too).
+    root.style.background = 'transparent';
     rect.style.display = 'block';
     label.style.display = 'block';
     paint(e);
