@@ -4,7 +4,8 @@
 
 The **snapstack browser extension** captures the visible tab and stacks the screenshots locally, so any
 MCP-capable LLM client can retrieve them on demand. One click (or `Cmd/Ctrl+Shift+S`) → the capture is stacked;
-your LLM asks for the screenshots → it gets them in order, then the stack is cleared.
+your LLM asks for the screenshots → it gets a manifest and reads the ones it needs; the captures stay until you clear
+them.
 
 **Fully local**: captures are sent only to a server on `127.0.0.1`, no data ever leaves your machine.
 
@@ -22,8 +23,8 @@ your LLM asks for the screenshots → it gets them in order, then the stack is c
 ```
 
 The extension encodes each capture as **WebP** (automatic **PNG** fallback if the browser can't encode WebP),
-downscales it if needed, and POSTs it to the server. The server stacks it on disk; your MCP client retrieves the
-whole stack through the [snapstack-server](https://github.com/bgaze/snapstack-server) MCP tools.
+downscales it if needed, and POSTs it to the server. The server stacks it on disk; your MCP client lists the stack and
+reads the captures it needs through the [snapstack-server](https://github.com/bgaze/snapstack-server) MCP tools.
 
 ## Requirements
 
@@ -51,8 +52,9 @@ the **Capture** button in the toolbar.
     - **Open folder** — opens the stack folder in your OS file manager.
     - **Copy all paths** — copies every capture's absolute path to the clipboard (one per line; green check on success).
     - **Capture** — takes a new capture of the current tab and stacks it.
-- **Grid** — two previews per row. Hover a preview for **Delete** (after confirmation) and **Copy path** (absolute path,
-  green check). **Click** a preview to open the full image in a new tab.
+- **Grid** — two previews per row, each tagged top-left with its **capture number** (the same number the MCP tools
+  use). Hover a preview for **Delete** (after confirmation) and **Copy path** (absolute path, green check). **Click** a
+  preview to open the full image in a new tab.
 
 > Confirmations use the browser's native dialog, which closes the popup — this is expected; the action still completes.
 
@@ -66,7 +68,8 @@ LLM, which then answers you in your language).
 2. While browsing, on each useful screen: **click** the icon → the dropdown opens; press **Capture** → the capture is
    stacked, the badge increments. The dropdown also lets you review, delete, copy paths, and open the folder.
 3. In your MCP client: "retrieve my screenshots".
-4. The LLM calls `get_screenshots` → receives the images in order → the stack is cleared, the badge resets to 0.
+4. The LLM calls `get_screenshots` → gets a manifest and reads the captures it needs by path. They stay stacked until
+   you clear them — via **Delete all** or the LLM's `clear_screenshots` — and the badge resets to 0.
 
 ## Configuration
 
