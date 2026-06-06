@@ -36,6 +36,8 @@ no account, no telemetry. See [PRIVACY.md](./PRIVACY.md).
 Click the snapstack icon to open the dropdown:
 
 - **Capture** — take a shot of the current tab and add it to the stack. The icon badge shows how many are stacked.
+- **Capture area** — drag a rectangle over the page and stack just that region; press <kbd>Esc</kbd> to cancel.
+  (Not available on browser-internal pages such as `chrome://` or the web store.)
 - **Grid** — your captures, two per row, each tagged with its **number** (the handle your LLM uses). Hover for
   **Delete** / **Copy path**; click a shot to open it full-size.
 - **Toolbar** — **Delete all**, **Open folder** (reveal the stack in your file manager), **Copy all paths**.
