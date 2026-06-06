@@ -129,6 +129,15 @@ function makeCell(item) {
   img.alt = item.title || item.url || item.name;
   cell.append(img);
 
+  // Stable capture number, top-left — lets the user match a preview to the
+  // number used by the MCP tools. Legacy unnumbered files get no badge.
+  if (item.number != null) {
+    const badge = document.createElement('span');
+    badge.className = 'badge';
+    badge.textContent = String(item.number).padStart(2, '0');
+    cell.append(badge);
+  }
+
   const controls = document.createElement('div');
   controls.className = 'controls';
   const delBtn = iconButton('trash', t('itemDelete'), (e) => {

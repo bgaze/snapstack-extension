@@ -83,6 +83,22 @@ body {
   display: block;
 }
 
+/* Stable capture number, top-left of the preview (white on black). */
+.cell .badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 1;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.78);
+  color: #fff;
+  font: 600 12px/1.5 ui-monospace, "SF Mono", Menlo, monospace;
+  letter-spacing: 0.5px;
+  user-select: none;
+  pointer-events: none;
+}
+
 /* Hover controls, top-right of the preview. */
 .cell .controls {
   position: absolute;
