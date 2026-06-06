@@ -207,6 +207,20 @@ The defaults work out of the box. Power users can tweak these via the extension'
 `0` = no downscale).
 </details>
 
+## Packaging for the stores
+
+The committed `manifest.json` carries both `background.service_worker` (Chrome) and `background.scripts`
+(Firefox) so it loads unpacked in either browser. A store package must carry only its own browser's key,
+so build per-browser bundles:
+
+```bash
+npm install      # dev-only: eslint
+npm run build    # → dist/chrome/ + dist/firefox/ and a zip for each
+```
+
+`dist/snapstack-chrome-<version>.zip` goes to the Chrome Web Store / Edge Add-ons;
+`dist/snapstack-firefox-<version>.zip` to Firefox AMO. Requires the system `zip`.
+
 ## Privacy & License
 
 No data collection, nothing leaves `127.0.0.1`. See [PRIVACY.md](./PRIVACY.md). MIT — see [LICENSE](./LICENSE).

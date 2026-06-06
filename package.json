@@ -1,0 +1,17 @@
+{
+  "name": "snapstack-extension",
+  "version": "1.0.0",
+  "private": true,
+  "description": "snapstack MV3 browser extension — capture the visible tab and push it to the local snapstack server",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "eslint": "^9.0.0",
+    "globals": "^15.0.0"
+  }
+}
