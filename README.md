@@ -87,6 +87,11 @@ The extension reads these from `storage.local` (defaults shown):
 - **Captures saved as PNG while `webp` is requested**: the browser (often Firefox, depending on the version) can't
   encode WebP → automatic PNG fallback, this is normal.
 
+## Privacy
+
+snapstack collects no personal data and sends nothing to any remote server — everything stays on `127.0.0.1` and your
+disk. See [PRIVACY.md](./PRIVACY.md).
+
 ## License
 
 MIT — see [LICENSE](./LICENSE).
