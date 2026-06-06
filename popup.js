@@ -27,6 +27,7 @@ const ICONS = {
     '<rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
   camera:
     '<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>',
+  crop: '<path d="M6.13 1L6 16a2 2 0 0 0 2 2h15"/><path d="M1 6.13L16 6a2 2 0 0 1 2 2v15"/>',
   check: '<polyline points="20 6 9 17 4 12"/>',
 };
 
@@ -81,7 +82,7 @@ function buildToolbar() {
   name.textContent = 'SnapStack';
   brand.append(logo, name);
 
-  // Actions (right) — order imposed by the spec: delete-all · open folder · copy all · capture.
+  // Actions (right) — order: delete-all · open folder · copy all · capture area · capture.
   const copyAllBtn = iconButton('copy', t('toolbarCopyAll'), () =>
     copyText(state.items.map((i) => i.path).join('\n'), copyAllBtn, 'copy'),
   );
@@ -91,6 +92,7 @@ function buildToolbar() {
     iconButton('trash', t('toolbarDeleteAll'), onClearAll),
     iconButton('folder', t('toolbarOpenFolder'), onReveal),
     copyAllBtn,
+    iconButton('crop', t('toolbarCaptureZone'), onCaptureZone),
     iconButton('camera', t('toolbarCapture'), onCapture),
   );
 
@@ -117,6 +119,15 @@ function onReveal() {
 async function onCapture() {
   const res = await api.runtime.sendMessage({ type: 'capture' });
   if (res?.ok) await load();
+}
+
+// Hand off to the background worker and close the popup immediately: the
+// selection happens on the page, where an open popup would only get in the way
+// (and would close on its own the moment the page takes focus). The badge
+// resyncs on its own once the capture lands.
+function onCaptureZone() {
+  api.runtime.sendMessage({ type: 'capture-zone' });
+  window.close();
 }
 
 // --- grid ------------------------------------------------------------------

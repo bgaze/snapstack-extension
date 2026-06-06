@@ -19,6 +19,10 @@
     "message": "Capture",
     "description": "Toolbar button: capture the current tab."
   },
+  "toolbarCaptureZone": {
+    "message": "Capture area",
+    "description": "Toolbar button: select a rectangular area of the page to capture."
+  },
   "itemDelete": {
     "message": "Delete",
     "description": "Per-image control: delete this capture."
@@ -42,6 +46,10 @@
   "serverNotRunning": {
     "message": "snapstack server is not running (http://127.0.0.1:4123).",
     "description": "Shown when the local server cannot be reached."
+  },
+  "zoneUnavailable": {
+    "message": "Area capture isn't available on this page.",
+    "description": "Notification when the selection overlay cannot be injected (e.g. browser-internal pages)."
   },
   "captureFailed": {
     "message": "Capture failed: $error$",

@@ -81,14 +81,31 @@ async function encode(bitmap, cfg) {
   return { blob, mimeType };
 }
 
-async function capture() {
+// Crop a bitmap to `crop` (image px), clamped to the bitmap's real size so a
+// stray devicePixelRatio or off-by-one can never read outside the source.
+async function cropBitmap(bitmap, crop) {
+  const sx = Math.max(0, Math.min(crop.x, bitmap.width));
+  const sy = Math.max(0, Math.min(crop.y, bitmap.height));
+  const sw = Math.max(1, Math.min(crop.w, bitmap.width - sx));
+  const sh = Math.max(1, Math.min(crop.h, bitmap.height - sy));
+  const canvas = new OffscreenCanvas(sw, sh);
+  canvas.getContext('2d').drawImage(bitmap, sx, sy, sw, sh, 0, 0, sw, sh);
+  const cropped = await createImageBitmap(canvas);
+  bitmap.close?.();
+  return cropped;
+}
+
+// `crop` (image px) is optional: omitted → full visible tab; provided → the
+// captured frame is cropped to it before the usual encode/downscale/push.
+async function capture(crop) {
   const cfg = await getConfig();
 
   const [tab] = await api.tabs.query({ active: true, currentWindow: true });
   if (!tab) throw new Error('no active tab');
 
   const dataUrl = await api.tabs.captureVisibleTab(tab.windowId, { format: 'png' });
-  const bitmap = await dataUrlToBitmap(dataUrl);
+  let bitmap = await dataUrlToBitmap(dataUrl);
+  if (crop) bitmap = await cropBitmap(bitmap, crop);
   const { blob, mimeType } = await encode(bitmap, cfg);
   bitmap.close?.();
 
@@ -113,12 +130,7 @@ function flashOk(count) {
   setTimeout(() => setBadge(count > 0 ? String(count) : '', COLOR_IDLE), 600);
 }
 
-async function notifyError(err) {
-  const raw = String(err?.message || err);
-  const unreachable = /Failed to fetch|NetworkError|ECONNREFUSED/i.test(raw);
-  const message = unreachable
-    ? api.i18n.getMessage('serverNotRunning')
-    : api.i18n.getMessage('captureFailed', [raw]);
+async function showNotification(message) {
   try {
     await api.notifications.create({
       type: 'basic',
@@ -129,6 +141,15 @@ async function notifyError(err) {
   } catch {
     /* notifications unavailable */
   }
+}
+
+async function notifyError(err) {
+  const raw = String(err?.message || err);
+  const unreachable = /Failed to fetch|NetworkError|ECONNREFUSED/i.test(raw);
+  const message = unreachable
+    ? api.i18n.getMessage('serverNotRunning')
+    : api.i18n.getMessage('captureFailed', [raw]);
+  await showNotification(message);
   await setBadge('!', COLOR_ERR);
 }
 
@@ -138,6 +159,68 @@ async function onTrigger() {
     flashOk(count);
     return { ok: true, count };
   } catch (e) {
+    await notifyError(e);
+    return { ok: false, error: String(e?.message || e) };
+  }
+}
+
+// --- area-selection capture -----------------------------------------------
+// The popup is torn down the moment focus leaves it for the page, so the whole
+// zone flow lives here: inject the overlay, wait for the user to draw a
+// rectangle (or cancel), then crop the visible-tab capture to it.
+const ZONE_UNAVAILABLE = '__zone_unavailable__';
+
+// Resolve with the 'zone-selected' message, or null if the user cancelled.
+function waitForZone() {
+  return new Promise((resolve) => {
+    const onMsg = (msg) => {
+      if (msg?.type !== 'zone-selected' && msg?.type !== 'zone-cancelled') return;
+      api.runtime.onMessage.removeListener(onMsg);
+      resolve(msg.type === 'zone-selected' ? msg : null);
+    };
+    api.runtime.onMessage.addListener(onMsg);
+  });
+}
+
+// Selection rectangle (CSS px + dpr) → crop rectangle in captured-image px.
+// captureVisibleTab returns physical pixels (= CSS viewport × dpr); cropBitmap
+// clamps the result against the real frame size.
+function cropFromSelection(sel) {
+  const { rect, dpr } = sel;
+  return {
+    x: Math.round(rect.x * dpr),
+    y: Math.round(rect.y * dpr),
+    w: Math.round(rect.w * dpr),
+    h: Math.round(rect.h * dpr),
+  };
+}
+
+async function captureZone() {
+  const [tab] = await api.tabs.query({ active: true, currentWindow: true });
+  if (!tab) throw new Error('no active tab');
+  try {
+    await api.scripting.executeScript({ target: { tabId: tab.id }, files: ['overlay.js'] });
+  } catch {
+    // Browser-internal pages (chrome://, the web store, the PDF viewer, …) reject
+    // injection — there is no page to draw on.
+    throw new Error(ZONE_UNAVAILABLE);
+  }
+  const sel = await waitForZone();
+  if (!sel) return null; // cancelled — no capture
+  return capture(cropFromSelection(sel));
+}
+
+async function onTriggerZone() {
+  try {
+    const count = await captureZone();
+    if (count == null) return { ok: true, cancelled: true };
+    flashOk(count);
+    return { ok: true, count };
+  } catch (e) {
+    if (String(e?.message) === ZONE_UNAVAILABLE) {
+      await showNotification(api.i18n.getMessage('zoneUnavailable'));
+      return { ok: false, error: 'zone_unavailable' };
+    }
     await notifyError(e);
     return { ok: false, error: String(e?.message || e) };
   }
@@ -165,6 +248,9 @@ api.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   switch (msg?.type) {
     case 'capture':
       onTrigger().then(sendResponse);
+      return true;
+    case 'capture-zone':
+      onTriggerZone().then(sendResponse);
       return true;
     case 'clear':
       serverOp('POST', '/clear').then(sendResponse);
