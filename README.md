@@ -3,6 +3,10 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/bgaze/snapstack-extension/actions/workflows/ci.yml"><img src="https://github.com/bgaze/snapstack-extension/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+</p>
+
+<p align="center">
   Capture any browser tab in one click and stack it locally — your AI reads the screenshots on demand.
 </p>
 
