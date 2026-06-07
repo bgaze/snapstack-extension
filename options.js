@@ -83,6 +83,10 @@ function setSharedEnabled(on) {
   }
 }
 
+// Tracks the last known server reachability so the live poll only reacts to a
+// change (and never clobbers values being edited).
+let lastReachable = null;
+
 // Pull the effective policy from the server; disable the section (pre-filled with
 // the defaults) if it can't be reached — offline, or a server predating /config.
 async function loadPolicy() {
@@ -92,8 +96,39 @@ async function loadPolicy() {
     fillPolicy({ ...POLICY_DEFAULTS, ...(await r.json()) });
     setSharedEnabled(true);
     flash($('sharedMsg'), '');
+    lastReachable = true;
   } catch {
     fillPolicy(POLICY_DEFAULTS);
+    setSharedEnabled(false);
+    flash($('sharedMsg'), t('optionsServerUnreachable'), true);
+    lastReachable = false;
+  }
+}
+
+// Keep the shared section in sync with the server's availability without a manual
+// refresh — same spirit as the popup badge. Acts only on a reachability CHANGE,
+// so it never overwrites values the user is editing; skipped while the server
+// address itself is being edited (that field holds a half-typed value).
+async function pollServer() {
+  if (document.visibilityState !== 'visible' || !$('serverBase').readOnly) return;
+  let reachable = false;
+  let policy = null;
+  try {
+    const r = await fetch(`${currentBase()}/config`);
+    if (r.ok) {
+      reachable = true;
+      policy = await r.json();
+    }
+  } catch {
+    reachable = false;
+  }
+  if (reachable === lastReachable) return;
+  lastReachable = reachable;
+  if (reachable) {
+    fillPolicy({ ...POLICY_DEFAULTS, ...policy });
+    setSharedEnabled(true);
+    flash($('sharedMsg'), '');
+  } else {
     setSharedEnabled(false);
     flash($('sharedMsg'), t('optionsServerUnreachable'), true);
   }
@@ -268,4 +303,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   $('editServer').addEventListener('click', startEditServer);
   $('saveServer').addEventListener('click', saveServer);
   $('cancelServer').addEventListener('click', cancelEditServer);
+
+  // Live server-availability sync: poll while visible, and re-check instantly when
+  // the tab regains focus (so starting/stopping the server reflects without a reload).
+  setInterval(pollServer, 4000);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') pollServer();
+  });
 });
