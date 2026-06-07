@@ -29,11 +29,16 @@
   },
   "commands": {
     "capture": {
-      "suggested_key": {
-        "default": "Ctrl+Shift+S",
-        "mac": "Command+Shift+S"
-      },
+      "suggested_key": { "default": "Alt+Shift+S" },
       "description": "__MSG_commandCapture__"
+    },
+    "capture-zone": {
+      "suggested_key": { "default": "Alt+Shift+A" },
+      "description": "__MSG_commandCaptureZone__"
+    },
+    "capture-full": {
+      "suggested_key": { "default": "Alt+Shift+F" },
+      "description": "__MSG_commandCaptureFull__"
     }
   },
   "icons": {

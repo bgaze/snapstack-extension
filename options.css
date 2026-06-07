@@ -108,20 +108,42 @@ body {
   color: #9ca3af;
 }
 
-.shortcut {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.shortcuts {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
-.shortcut code {
+.shortcuts li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+}
+
+.shortcuts li + li {
+  border-top: 1px solid #f3f4f6;
+}
+
+.shortcuts li > span {
+  color: #374151;
+}
+
+.shortcuts code {
   flex: 0 0 auto;
-  padding: 4px 8px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 4px 10px;
   border-radius: 6px;
   background: #f3f4f6;
   border: 1px solid #e5e7eb;
-  font: 600 12px/1.4 ui-monospace, "SF Mono", Menlo, monospace;
-  color: #374151;
+  font: 600 13px/1.4 ui-monospace, "SF Mono", Menlo, monospace;
+  color: #1f2937;
 }
 
 .row {
@@ -162,9 +184,73 @@ body {
   background: #eef2ff;
 }
 
+/* Higher specificity than `.field > span` (the label), so the error wins in red. */
+.field .field-error {
+  color: #b91c1c;
+  font-size: 12px;
+}
+
+.field .field-error:empty {
+  display: none;
+}
+
+.inline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.inline input {
+  flex: 1 1 auto;
+}
+
+.inline input:read-only {
+  background: #f9fafb;
+  color: #374151;
+}
+
+.icon-btn {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  color: #374151;
+  cursor: pointer;
+}
+
+.icon-btn:hover {
+  background: #f3f4f6;
+}
+
+/* `.icon-btn` sets display, which would otherwise beat the [hidden] attribute. */
+.icon-btn[hidden] {
+  display: none;
+}
+
+.icon-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.hint a {
+  color: #4f46e5;
+  cursor: pointer;
+}
+
 .msg {
+  margin: 10px 0 0;
   font-size: 12px;
   color: #16a34a;
+}
+
+.msg:empty {
+  display: none;
 }
 
 .msg.error {

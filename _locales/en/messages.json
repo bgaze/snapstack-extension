@@ -126,16 +126,16 @@
     "description": "Options field label: local URL of the snapstack server."
   },
   "optionsFieldShortcut": {
-    "message": "Capture shortcut",
-    "description": "Options field label: the keyboard shortcut that triggers a capture."
+    "message": "Capture shortcuts",
+    "description": "Options section label: the keyboard shortcuts that trigger each capture mode."
   },
   "optionsShortcutEdit": {
     "message": "Change…",
     "description": "Button that opens the browser's extension-shortcuts settings."
   },
   "optionsShortcutHint": {
-    "message": "Set or change the shortcut in your browser's extension shortcuts settings.",
-    "description": "Hint under the keyboard-shortcut row."
+    "message": "You can change the shortcuts on the extensions page: {chrome://extensions/shortcuts}",
+    "description": "Chrome/Edge shortcut instructions; the text inside {…} becomes a link opened via tabs.create."
   },
   "optionsShortcutNone": {
     "message": "Not set",
@@ -160,5 +160,57 @@
   "commandCapture": {
     "message": "Capture the visible tab",
     "description": "Description of the keyboard-shortcut command, shown in the browser's shortcuts UI."
+  },
+  "commandCaptureZone": {
+    "message": "Capture a screen area",
+    "description": "Description of the area-capture keyboard-shortcut command."
+  },
+  "commandCaptureFull": {
+    "message": "Capture the full page",
+    "description": "Description of the full-page keyboard-shortcut command."
+  },
+  "optionsResetDefaults": {
+    "message": "Restore defaults",
+    "description": "Button: reset the shared capture policy to its default values."
+  },
+  "confirmResetDefaults": {
+    "message": "Restore the default capture settings?",
+    "description": "Confirmation before resetting the shared capture policy."
+  },
+  "optionsShortcutHintFirefox": {
+    "message": "To change the shortcuts:\n1. Open Firefox's add-ons: {about:addons}\n2. Click the gear next to “Manage Your Extensions”.\n3. Choose “Manage Extension Shortcuts”.",
+    "description": "Firefox shortcut instructions (multi-line, \\n-separated); the text inside {…} becomes a link."
+  },
+  "optionsErrQuality": {
+    "message": "Enter a number between 0 and 1.",
+    "description": "Inline validation error for the quality field."
+  },
+  "optionsErrMaxEdge": {
+    "message": "Enter a whole number of 0 or more.",
+    "description": "Inline validation error for the max edge field."
+  },
+  "optionsErrMaxSlices": {
+    "message": "Enter a whole number of 1 or more.",
+    "description": "Inline validation error for the full-page slice cap field."
+  },
+  "optionsEdit": {
+    "message": "Edit",
+    "description": "Icon-button title: make the server address editable."
+  },
+  "optionsCancel": {
+    "message": "Cancel",
+    "description": "Icon-button title: discard the server-address edit."
+  },
+  "optionsErrServerUrl": {
+    "message": "Enter a valid http(s) address.",
+    "description": "Inline error when the typed server address is not a valid http(s) URL."
+  },
+  "optionsErrServerDown": {
+    "message": "No server responds at this address.",
+    "description": "Inline error when no server answers at the typed address."
+  },
+  "optionsCopyHint": {
+    "message": "Click to copy",
+    "description": "Title on the about:addons address (Firefox), which a click copies to the clipboard."
   }
 }

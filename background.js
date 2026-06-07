@@ -147,7 +147,8 @@ async function encode(bitmap, cfg, downscale = 'longest') {
 
   // Try the requested format; fall back to PNG if the browser cannot encode it
   // (notably WebP encoding on some Firefox versions).
-  let mimeType = cfg.format === 'png' ? 'image/png' : 'image/webp';
+  const MIME_BY_FORMAT = { png: 'image/png', jpg: 'image/jpeg', webp: 'image/webp' };
+  let mimeType = MIME_BY_FORMAT[cfg.format] ?? 'image/webp';
   let blob = await canvas.convertToBlob({ type: mimeType, quality: cfg.quality });
   if (blob.type !== mimeType) {
     mimeType = 'image/png';
@@ -753,10 +754,12 @@ api.notifications?.onClicked.addListener((id) => {
   if (id === OUTDATED_NOTIF_ID) api.tabs.create({ url: UPDATE_URL });
 });
 
-// Keyboard shortcut (manifest `commands`): trigger a visible-tab capture. The
-// binding is set/changed in the browser's own shortcuts UI (per-browser, local).
+// Keyboard shortcuts (manifest `commands`): one per capture mode. Bindings are
+// set/changed in the browser's own shortcuts UI (per-browser, local).
 api.commands?.onCommand.addListener((command) => {
   if (command === 'capture') onTrigger();
+  else if (command === 'capture-zone') onTriggerZone();
+  else if (command === 'capture-full') onTriggerFull();
 });
 
 // Sync once when the worker/event page spins up.

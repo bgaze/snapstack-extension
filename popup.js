@@ -80,6 +80,43 @@ const toolbarEl = document.getElementById('toolbar');
 const scrollEl = document.getElementById('scroll');
 const state = { items: [], base: DEFAULTS.serverBase };
 
+// Stack-dependent toolbar buttons (disabled when the stack is empty).
+const toolbarBtns = {};
+
+// Enable "Delete all" / "Copy all paths" only when there is something to act on.
+function setStackButtons(hasItems) {
+  if (toolbarBtns.clear) toolbarBtns.clear.disabled = !hasItems;
+  if (toolbarBtns.copyAll) toolbarBtns.copyAll.disabled = !hasItems;
+}
+
+// Map of command name → its current keyboard shortcut (empty if unbound), so the
+// capture buttons can advertise their shortcut in the tooltip.
+async function captureShortcuts() {
+  const map = {};
+  try {
+    for (const c of await api.commands.getAll()) {
+      if (c.shortcut) map[c.name] = c.shortcut;
+    }
+  } catch {
+    /* commands API unavailable */
+  }
+  return map;
+}
+
+// Prepend each capture button's shortcut to its tooltip, once getAll resolves.
+// Done AFTER the synchronous render so a cold service worker can never delay the
+// popup paint — Firefox would otherwise show an empty popup on the first click.
+function applyShortcutTooltips(byCommand) {
+  captureShortcuts().then((sc) => {
+    for (const [name, btn] of Object.entries(byCommand)) {
+      if (!sc[name]) continue;
+      const label = `${sc[name]} — ${btn.dataset.tip}`;
+      btn.dataset.tip = label;
+      btn.setAttribute('aria-label', label);
+    }
+  });
+}
+
 function buildToolbar() {
   // Brand (left): icon + wordmark.
   const brand = document.createElement('div');
@@ -98,20 +135,29 @@ function buildToolbar() {
   );
   const sep = document.createElement('span');
   sep.className = 'sep';
+  const clearAllBtn = iconButton('trash', t('toolbarDeleteAll'), onClearAll);
+  const fullBtn = iconButton('fullpage', t('toolbarCaptureFull'), onCaptureFull);
+  const zoneBtn = iconButton('crop', t('toolbarCaptureZone'), onCaptureZone);
+  const captureBtn = iconButton('camera', t('toolbarCapture'), onCapture);
   const actions = document.createElement('div');
   actions.className = 'actions';
   actions.append(
     iconButton('gear', t('toolbarOpenSettings'), onOpenSettings),
-    iconButton('trash', t('toolbarDeleteAll'), onClearAll),
     iconButton('folder', t('toolbarOpenFolder'), onReveal),
+    clearAllBtn,
     copyAllBtn,
     sep,
-    iconButton('fullpage', t('toolbarCaptureFull'), onCaptureFull),
-    iconButton('crop', t('toolbarCaptureZone'), onCaptureZone),
-    iconButton('camera', t('toolbarCapture'), onCapture),
+    fullBtn,
+    zoneBtn,
+    captureBtn,
   );
 
+  toolbarBtns.clear = clearAllBtn;
+  toolbarBtns.copyAll = copyAllBtn;
+  setStackButtons(state.items.length > 0);
+
   toolbarEl.replaceChildren(brand, actions);
+  applyShortcutTooltips({ 'capture-full': fullBtn, 'capture-zone': zoneBtn, capture: captureBtn });
 }
 
 // --- toolbar actions -------------------------------------------------------
@@ -242,10 +288,12 @@ async function load() {
     items = await fetchList(cfg.serverBase);
   } catch {
     showMessage(t('serverNotRunning'), true);
+    setStackButtons(false);
     return;
   }
 
   state.items = items;
+  setStackButtons(items.length > 0);
   renderGrid(items);
 }
 

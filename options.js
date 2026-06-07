@@ -19,6 +19,11 @@ function localize() {
   for (const el of document.querySelectorAll('[data-i18n]')) {
     el.textContent = t(el.dataset.i18n);
   }
+  for (const el of document.querySelectorAll('[data-i18n-title]')) {
+    const v = t(el.dataset.i18nTitle);
+    el.title = v;
+    el.setAttribute('aria-label', v);
+  }
 }
 
 function flash(el, text, isError) {
@@ -38,10 +43,42 @@ function fillPolicy(p) {
   $('quality').value = p.quality;
   $('maxEdge').value = p.maxEdge;
   $('maxSlices').value = p.maxSlices;
+  clearFieldErrors();
+}
+
+function clearFieldErrors() {
+  for (const id of ['quality', 'maxEdge', 'maxSlices']) $(`err-${id}`).textContent = '';
+}
+
+// Client-side mirror of the server schema: a bad value surfaces INLINE at its
+// field rather than as a generic server error at the bottom. Returns the valid
+// policy, or null (with the offending fields flagged).
+function readValidPolicy() {
+  clearFieldErrors();
+  const qStr = $('quality').value.trim();
+  const meStr = $('maxEdge').value.trim();
+  const msStr = $('maxSlices').value.trim();
+  const q = Number(qStr);
+  const me = Number(meStr);
+  const ms = Number(msStr);
+  let ok = true;
+  if (qStr === '' || !Number.isFinite(q) || q < 0 || q > 1) {
+    $('err-quality').textContent = t('optionsErrQuality');
+    ok = false;
+  }
+  if (meStr === '' || !Number.isInteger(me) || me < 0) {
+    $('err-maxEdge').textContent = t('optionsErrMaxEdge');
+    ok = false;
+  }
+  if (msStr === '' || !Number.isInteger(ms) || ms < 1) {
+    $('err-maxSlices').textContent = t('optionsErrMaxSlices');
+    ok = false;
+  }
+  return ok ? { format: $('format').value, quality: q, maxEdge: me, maxSlices: ms } : null;
 }
 
 function setSharedEnabled(on) {
-  for (const id of ['format', 'quality', 'maxEdge', 'maxSlices', 'saveShared']) {
+  for (const id of ['format', 'quality', 'maxEdge', 'maxSlices', 'saveShared', 'resetShared']) {
     $(id).disabled = !on;
   }
 }
@@ -63,12 +100,8 @@ async function loadPolicy() {
 }
 
 async function saveShared() {
-  const policy = {
-    format: $('format').value,
-    quality: Number($('quality').value),
-    maxEdge: Math.round(Number($('maxEdge').value)),
-    maxSlices: Math.round(Number($('maxSlices').value)),
-  };
+  const policy = readValidPolicy();
+  if (!policy) return; // inline field errors shown; nothing to save
   try {
     const r = await fetch(`${currentBase()}/config`, {
       method: 'POST',
@@ -93,40 +126,146 @@ async function loadLocal() {
   $('serverBase').value = serverBase;
 }
 
-async function saveLocal() {
-  try {
-    await api.storage.local.set({ serverBase: currentBase() });
-    flash($('localMsg'), t('optionsSaved'));
-  } catch {
-    flash($('localMsg'), t('optionsSaveError'), true);
-  }
-  // The server address may have changed → re-pull the shared policy from it.
-  await loadPolicy();
+// serverBase is read-only until the user clicks edit; then save/cancel appear.
+let serverBaseBackup = '';
+
+function setServerEditing(on) {
+  $('serverBase').readOnly = !on;
+  $('editServer').hidden = on;
+  $('saveServer').hidden = !on;
+  $('cancelServer').hidden = !on;
+  $('err-serverBase').textContent = '';
+  if (on) $('serverBase').focus();
 }
 
-async function loadShortcut() {
-  let shortcut = '';
+function startEditServer() {
+  serverBaseBackup = $('serverBase').value;
+  setServerEditing(true);
+}
+
+function cancelEditServer() {
+  $('serverBase').value = serverBaseBackup;
+  setServerEditing(false);
+}
+
+// Commit a new server address only after it validates AND actually answers — so a
+// typo can't silently break capture.
+async function saveServer() {
+  const url = $('serverBase').value.trim();
+  if (!/^https?:\/\/.+/i.test(url)) {
+    $('err-serverBase').textContent = t('optionsErrServerUrl');
+    return;
+  }
+  let reachable = false;
   try {
-    const cmds = await api.commands.getAll();
-    shortcut = (cmds.find((c) => c.name === 'capture') || {}).shortcut || '';
+    reachable = (await fetch(`${url}/config`)).ok;
+  } catch {
+    reachable = false;
+  }
+  if (!reachable) {
+    $('err-serverBase').textContent = t('optionsErrServerDown');
+    return;
+  }
+  try {
+    await api.storage.local.set({ serverBase: url });
+  } catch {
+    /* storage unavailable */
+  }
+  setServerEditing(false);
+  await loadPolicy(); // re-pull the shared policy from the new server
+}
+
+async function resetShared() {
+  if (!confirm(t('confirmResetDefaults'))) return;
+  try {
+    const r = await fetch(`${currentBase()}/config`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(POLICY_DEFAULTS),
+    });
+    if (!r.ok) throw new Error(String(r.status));
+    fillPolicy({ ...POLICY_DEFAULTS, ...(await r.json()) });
+    flash($('sharedMsg'), t('optionsSaved'));
+  } catch {
+    flash($('sharedMsg'), t('optionsSaveError'), true);
+  }
+}
+
+const SHORTCUT_COMMANDS = ['capture', 'capture-zone', 'capture-full'];
+
+// Show each capture command's current binding (one <code> per mode).
+async function loadShortcuts() {
+  const byName = {};
+  try {
+    for (const c of await api.commands.getAll()) byName[c.name] = c.shortcut || '';
   } catch {
     /* commands API unavailable */
   }
-  $('shortcut').textContent = shortcut || t('optionsShortcutNone');
+  for (const name of SHORTCUT_COMMANDS) {
+    $(`sc-${name}`).textContent = byName[name] || t('optionsShortcutNone');
+  }
 }
 
-// Open the browser's extension-shortcuts UI. Chrome/Edge expose a deep link;
-// Firefox has no stable one, so fall back to its add-ons manager. Best-effort.
-function openShortcuts() {
-  const url = globalThis.browser ? 'about:addons' : 'chrome://extensions/shortcuts';
-  api.tabs.create({ url }).catch(() => {});
+// Reliable Firefox detection: the extension's own URL scheme (globalThis.browser
+// is unreliable — it can be truthy in Chrome too).
+function isFirefox() {
+  try {
+    return api.runtime.getURL('').startsWith('moz-extension://');
+  } catch {
+    return false;
+  }
+}
+
+// Render a help string: lines split on \n, and a {url} marker becomes a link that
+// opens that url via tabs.create. Works for chrome://… on Chrome/Edge; Firefox
+// blocks about:addons, so there the link is informational (the steps guide the user).
+function renderShortcutHelp(el, raw) {
+  el.replaceChildren();
+  raw.split('\n').forEach((line, i) => {
+    if (i) el.appendChild(document.createElement('br'));
+    const m = /^([\s\S]*)\{([\s\S]+)\}([\s\S]*)$/.exec(line);
+    if (!m) {
+      el.appendChild(document.createTextNode(line));
+      return;
+    }
+    const url = m[2];
+    const a = document.createElement('a');
+    a.href = '#';
+    a.textContent = url;
+    // Chrome/Edge open chrome:// via tabs.create. Firefox cannot open about:
+    // pages at all (tabs.create is a no-op, links are blocked), so there a click
+    // copies the address to paste manually.
+    const copyOnly = isFirefox() && url.startsWith('about:');
+    if (copyOnly) a.title = t('optionsCopyHint');
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (!copyOnly) {
+        api.tabs.create({ url }).catch(() => {});
+        return;
+      }
+      navigator.clipboard?.writeText(url).then(() => {
+        a.textContent = `${url} ✓`;
+        setTimeout(() => { a.textContent = url; }, 1200);
+      }).catch(() => {});
+    });
+    el.append(document.createTextNode(m[1]), a, document.createTextNode(m[3]));
+  });
+}
+
+// Shortcuts are editable only in the browser's own UI (no in-page API on Chrome).
+// Show the right instructions per browser — informational, no button.
+function setupShortcutHelp() {
+  renderShortcutHelp($('shortcutHelp'), isFirefox() ? t('optionsShortcutHintFirefox') : t('optionsShortcutHint'));
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
   localize();
+  setupShortcutHelp();
   await loadLocal();
-  await Promise.all([loadPolicy(), loadShortcut()]);
+  await Promise.all([loadPolicy(), loadShortcuts()]);
   $('saveShared').addEventListener('click', saveShared);
-  $('saveLocal').addEventListener('click', saveLocal);
-  $('editShortcut').addEventListener('click', openShortcuts);
+  $('resetShared').addEventListener('click', resetShared);
+  $('editServer').addEventListener('click', startEditServer);
+  $('saveServer').addEventListener('click', saveServer);
+  $('cancelServer').addEventListener('click', cancelEditServer);
 });
