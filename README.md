@@ -72,62 +72,21 @@ Three steps: **the server**, **your MCP client**, **this extension**.
 
 ### 1. Install the local server
 
-> Needs **[Node.js](https://nodejs.org) ≥ 18** and **[git](https://git-scm.com)**.
-> Check with `node -v` and `git --version`.
+> Needs **[Node.js](https://nodejs.org) ≥ 18** (`node -v`). No git required.
 
-It's a permanent background tool, so it installs into your system's standard app location (not Downloads). Pick your
-OS — copy the whole block and paste it into a terminal:
-
-<details open>
-<summary><b>macOS</b></summary>
+The server ships on npm. One command installs it as a background tool that starts on login, restarts on crash, and
+updates itself on each launch — same on macOS, Linux and Windows:
 
 ```bash
-# 1. Clone the server into the macOS app-support directory
-git clone https://github.com/bgaze/snapstack-server.git "$HOME/Library/Application Support/snapstack"
-cd "$HOME/Library/Application Support/snapstack"
-
-# 2. Install dependencies (just two small packages)
-npm install
-
-# 3. Start it now + at every login, with crash-restart and auto-update (launchd)
-./deploy/install-macos.sh
+npx -y snapstack-server@latest install
 ```
-</details>
 
-<details>
-<summary><b>Linux</b></summary>
+This installs into your system's standard app location (macOS `~/Library/Application Support/snapstack`, Linux
+`~/.local/share/snapstack`, Windows `%LOCALAPPDATA%\snapstack`) and registers the auto-start unit (launchd / systemd
+`--user` / logon scheduled task). Each (re)start does a best-effort `npm install … @latest` then runs the local copy,
+so it self-updates and still starts offline once installed. Remove it with `npx -y snapstack-server@latest uninstall`.
 
-```bash
-# 1. Clone the server into the standard data directory
-git clone https://github.com/bgaze/snapstack-server.git "$HOME/.local/share/snapstack"
-cd "$HOME/.local/share/snapstack"
-
-# 2. Install dependencies (just two small packages)
-npm install
-
-# 3. Start it now + at every login, with restart and auto-update (systemd --user)
-./deploy/install-linux.sh
-```
-</details>
-
-<details>
-<summary><b>Windows</b> (PowerShell)</summary>
-
-```powershell
-# 1. Clone the server into your local app data
-git clone https://github.com/bgaze/snapstack-server.git "$env:LOCALAPPDATA\snapstack"
-Set-Location "$env:LOCALAPPDATA\snapstack"
-
-# 2. Install dependencies (just two small packages)
-npm install
-
-# 3. Start it now + at every login, with auto-update (scheduled task)
-.\deploy\install-windows.ps1
-```
-</details>
-
-That's it — the server now starts on login and **updates itself** (`git pull`) each time it launches. To run it just
-once instead, skip step 3 and use `npm start`.
+To run it just once in the foreground instead, skip `install` and run `npx -y snapstack-server@latest`.
 
 ### 2. Register snapstack with your MCP client
 
@@ -148,6 +107,19 @@ claude mcp add --transport http --scope user snapstack http://127.0.0.1:4123/mcp
   }
 }
 ```
+
+**Clients that only spawn a process** (stdio transport) — point them at the `snapstack-mcp` bin:
+
+```json
+{
+  "mcpServers": {
+    "snapstack": { "command": "npx", "args": ["-y", "-p", "snapstack-server", "snapstack-mcp"] }
+  }
+}
+```
+
+> The stdio front-end reads the same stack but is read/clear only — you still need the installed server running so the
+> extension can push captures to it.
 
 ### 3. Install the extension
 
