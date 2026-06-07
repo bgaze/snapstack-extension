@@ -25,5 +25,25 @@
     "placeholders": { "error": { "content": "$1" } }
   },
   "serverOutdated": { "message": "Сервер snapstack устарел." },
-  "serverOutdatedAction": { "message": "Обновить" }
+  "serverOutdatedAction": { "message": "Обновить" },
+  "toolbarOpenSettings": { "message": "Настройки" },
+  "optionsTitle": { "message": "Настройки snapstack" },
+  "optionsSharedTitle": { "message": "Общие для всех ваших браузеров" },
+  "optionsSharedHint": { "message": "Эти настройки захвата хранятся на сервере и применяются ко всем браузерам с установленным расширением." },
+  "optionsLocalTitle": { "message": "Только этот браузер" },
+  "optionsLocalHint": { "message": "Только для этого браузера." },
+  "optionsFieldFormat": { "message": "Формат изображения" },
+  "optionsFieldQuality": { "message": "Качество (0–1)" },
+  "optionsFieldMaxEdge": { "message": "Макс. сторона в пикселях (0 = без уменьшения)" },
+  "optionsFieldMaxSlices": { "message": "Лимит срезов полной страницы" },
+  "optionsFieldServerBase": { "message": "Адрес сервера" },
+  "optionsFieldShortcut": { "message": "Сочетание клавиш для снимка" },
+  "optionsShortcutEdit": { "message": "Изменить…" },
+  "optionsShortcutHint": { "message": "Задайте или измените сочетание клавиш в настройках сочетаний клавиш для расширений вашего браузера." },
+  "optionsShortcutNone": { "message": "Не задано" },
+  "optionsSave": { "message": "Сохранить" },
+  "optionsSaved": { "message": "Сохранено" },
+  "optionsServerUnreachable": { "message": "Сервер недоступен — запустите или обновите сервер snapstack, чтобы изменить общие настройки." },
+  "optionsSaveError": { "message": "Не удалось сохранить — проверьте сервер." },
+  "commandCapture": { "message": "Сделать снимок видимой вкладки" }
 }

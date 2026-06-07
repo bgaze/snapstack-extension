@@ -25,5 +25,25 @@
     "placeholders": { "error": { "content": "$1" } }
   },
   "serverOutdated": { "message": "snapstack 服务器版本过旧。" },
-  "serverOutdatedAction": { "message": "更新" }
+  "serverOutdatedAction": { "message": "更新" },
+  "toolbarOpenSettings": { "message": "设置" },
+  "optionsTitle": { "message": "snapstack 设置" },
+  "optionsSharedTitle": { "message": "所有浏览器通用" },
+  "optionsSharedHint": { "message": "这些捕获设置保存在服务器上，适用于所有安装了该扩展的浏览器。" },
+  "optionsLocalTitle": { "message": "仅此浏览器" },
+  "optionsLocalHint": { "message": "仅适用于此浏览器。" },
+  "optionsFieldFormat": { "message": "图像格式" },
+  "optionsFieldQuality": { "message": "质量（0–1）" },
+  "optionsFieldMaxEdge": { "message": "最大边长（像素，0 = 不缩小）" },
+  "optionsFieldMaxSlices": { "message": "整页捕获切片上限" },
+  "optionsFieldServerBase": { "message": "服务器地址" },
+  "optionsFieldShortcut": { "message": "捕获快捷键" },
+  "optionsShortcutEdit": { "message": "更改…" },
+  "optionsShortcutHint": { "message": "在浏览器的扩展快捷键设置中设置或更改快捷键。" },
+  "optionsShortcutNone": { "message": "未设置" },
+  "optionsSave": { "message": "保存" },
+  "optionsSaved": { "message": "已保存" },
+  "optionsServerUnreachable": { "message": "服务器无法访问 — 请启动或更新 snapstack 服务器以编辑共享设置。" },
+  "optionsSaveError": { "message": "无法保存 — 请检查服务器。" },
+  "commandCapture": { "message": "捕获可见标签页" }
 }

@@ -25,5 +25,25 @@
     "placeholders": { "error": { "content": "$1" } }
   },
   "serverOutdated": { "message": "Der snapstack-Server ist veraltet." },
-  "serverOutdatedAction": { "message": "Aktualisieren" }
+  "serverOutdatedAction": { "message": "Aktualisieren" },
+  "toolbarOpenSettings": { "message": "Einstellungen" },
+  "optionsTitle": { "message": "snapstack-Einstellungen" },
+  "optionsSharedTitle": { "message": "Für alle Ihre Browser gemeinsam" },
+  "optionsSharedHint": { "message": "Diese Aufnahmeeinstellungen werden auf dem Server gespeichert und gelten für jeden Browser, in dem die Erweiterung läuft." },
+  "optionsLocalTitle": { "message": "Nur dieser Browser" },
+  "optionsLocalHint": { "message": "Gilt nur für diesen Browser." },
+  "optionsFieldFormat": { "message": "Bildformat" },
+  "optionsFieldQuality": { "message": "Qualität (0–1)" },
+  "optionsFieldMaxEdge": { "message": "Maximale Kante in px (0 = keine Verkleinerung)" },
+  "optionsFieldMaxSlices": { "message": "Limit für Vollseiten-Abschnitte" },
+  "optionsFieldServerBase": { "message": "Serveradresse" },
+  "optionsFieldShortcut": { "message": "Aufnahme-Tastenkürzel" },
+  "optionsShortcutEdit": { "message": "Ändern…" },
+  "optionsShortcutHint": { "message": "Legen Sie das Tastenkürzel in den Tastenkürzel-Einstellungen für Erweiterungen Ihres Browsers fest oder ändern Sie es." },
+  "optionsShortcutNone": { "message": "Nicht festgelegt" },
+  "optionsSave": { "message": "Speichern" },
+  "optionsSaved": { "message": "Gespeichert" },
+  "optionsServerUnreachable": { "message": "Server nicht erreichbar — starten oder aktualisieren Sie den snapstack-Server, um die gemeinsamen Einstellungen zu bearbeiten." },
+  "optionsSaveError": { "message": "Speichern fehlgeschlagen — prüfen Sie den Server." },
+  "commandCapture": { "message": "Sichtbaren Tab aufnehmen" }
 }

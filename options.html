@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="head">
+        <img class="logo" src="icons/icon.svg" alt="" />
+        <h1 data-i18n="optionsTitle"></h1>
+      </header>
+
+      <!-- Server-owned capture policy: one edit applies to every browser. -->
+      <section class="card">
+        <h2><span class="scope" aria-hidden="true">🌐</span> <span data-i18n="optionsSharedTitle"></span></h2>
+        <p class="hint" data-i18n="optionsSharedHint"></p>
+
+        <label class="field">
+          <span data-i18n="optionsFieldFormat"></span>
+          <select id="format">
+            <option value="webp">WebP</option>
+            <option value="png">PNG</option>
+          </select>
+        </label>
+        <label class="field">
+          <span data-i18n="optionsFieldQuality"></span>
+          <input id="quality" type="number" min="0" max="1" step="0.05" />
+        </label>
+        <label class="field">
+          <span data-i18n="optionsFieldMaxEdge"></span>
+          <input id="maxEdge" type="number" min="0" step="1" />
+        </label>
+        <label class="field">
+          <span data-i18n="optionsFieldMaxSlices"></span>
+          <input id="maxSlices" type="number" min="1" step="1" />
+        </label>
+
+        <div class="row">
+          <button id="saveShared" class="btn" data-i18n="optionsSave"></button>
+          <span id="sharedMsg" class="msg" role="status"></span>
+        </div>
+      </section>
+
+      <!-- Local to this browser only. -->
+      <section class="card">
+        <h2><span class="scope" aria-hidden="true">💻</span> <span data-i18n="optionsLocalTitle"></span></h2>
+        <p class="hint" data-i18n="optionsLocalHint"></p>
+
+        <label class="field">
+          <span data-i18n="optionsFieldServerBase"></span>
+          <input id="serverBase" type="text" inputmode="url" spellcheck="false" />
+        </label>
+
+        <div class="field">
+          <span data-i18n="optionsFieldShortcut"></span>
+          <div class="shortcut">
+            <code id="shortcut"></code>
+            <button id="editShortcut" class="btn btn-ghost" data-i18n="optionsShortcutEdit"></button>
+          </div>
+          <p class="hint small" data-i18n="optionsShortcutHint"></p>
+        </div>
+
+        <div class="row">
+          <button id="saveLocal" class="btn" data-i18n="optionsSave"></button>
+          <span id="localMsg" class="msg" role="status"></span>
+        </div>
+      </section>
+    </main>
+    <script src="options.js"></script>
+  </body>
+</html>

@@ -25,5 +25,25 @@
     "placeholders": { "error": { "content": "$1" } }
   },
   "serverOutdated": { "message": "El servidor snapstack está desactualizado." },
-  "serverOutdatedAction": { "message": "Actualizar" }
+  "serverOutdatedAction": { "message": "Actualizar" },
+  "toolbarOpenSettings": { "message": "Ajustes" },
+  "optionsTitle": { "message": "Ajustes de snapstack" },
+  "optionsSharedTitle": { "message": "Común a todos tus navegadores" },
+  "optionsSharedHint": { "message": "Estos ajustes de captura se guardan en el servidor y se aplican a todos los navegadores donde está instalada la extensión." },
+  "optionsLocalTitle": { "message": "Solo este navegador" },
+  "optionsLocalHint": { "message": "Específico de este navegador." },
+  "optionsFieldFormat": { "message": "Formato de imagen" },
+  "optionsFieldQuality": { "message": "Calidad (0–1)" },
+  "optionsFieldMaxEdge": { "message": "Borde máximo en px (0 = sin reducción)" },
+  "optionsFieldMaxSlices": { "message": "Límite de franjas de página completa" },
+  "optionsFieldServerBase": { "message": "Dirección del servidor" },
+  "optionsFieldShortcut": { "message": "Atajo de captura" },
+  "optionsShortcutEdit": { "message": "Cambiar…" },
+  "optionsShortcutHint": { "message": "Define o cambia el atajo en los ajustes de atajos de extensiones de tu navegador." },
+  "optionsShortcutNone": { "message": "Sin definir" },
+  "optionsSave": { "message": "Guardar" },
+  "optionsSaved": { "message": "Guardado" },
+  "optionsServerUnreachable": { "message": "Servidor no disponible — inicia o actualiza el servidor de snapstack para editar los ajustes compartidos." },
+  "optionsSaveError": { "message": "No se pudo guardar — comprueba el servidor." },
+  "commandCapture": { "message": "Capturar la pestaña visible" }
 }

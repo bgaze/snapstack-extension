@@ -9,6 +9,7 @@ const DEFAULTS = {
   format: 'webp', // 'webp' | 'png'
   quality: 0.85, // lossy quality for webp/jpeg
   maxEdge: 1568, // downscale the longest edge to this many px (0 = no downscale)
+  maxSlices: 50, // full-page capture: safety net against endless/infinite-scroll pages
 };
 
 const COLOR_IDLE = '#4F46E5';
@@ -28,12 +29,25 @@ const UPDATE_URL = 'https://github.com/bgaze/snapstack-server#install--run';
 const OUTDATED_NOTIF_ID = 'snapstack-server-outdated';
 
 async function getConfig() {
+  let cfg;
   try {
     const stored = await api.storage?.local.get(DEFAULTS);
-    return { ...DEFAULTS, ...stored };
+    cfg = { ...DEFAULTS, ...stored };
   } catch {
-    return { ...DEFAULTS };
+    cfg = { ...DEFAULTS };
   }
+  // The capture policy (format/quality/maxEdge/maxSlices) is owned by the server
+  // so a single edit applies to every browser the user runs; serverBase stays
+  // local. Overlay the server's effective policy. Fall back to DEFAULTS if the
+  // server is unreachable or predates /config (404) — capture must never break,
+  // and DEFAULTS mirror the server's DEFAULT_POLICY so the fallback is identical.
+  try {
+    const r = await fetch(`${cfg.serverBase}/config`);
+    if (r.ok) cfg = { ...cfg, ...(await r.json()) };
+  } catch {
+    /* offline / pre-/config server → keep the local DEFAULTS */
+  }
+  return cfg;
 }
 
 // --- badge ----------------------------------------------------------------
@@ -332,7 +346,6 @@ const SLICE_DELAY_MS = 550; // throttle: stay under Chrome's ~2 captureVisibleTa
 const SETTLE_MS = 150; // let the page settle (sticky reflow, lazy content) after each scroll
 const FREEZE_PAINT_MS = 50; // let a freshly-hidden header repaint before the snapshot
 const MAX_CANVAS_PX = 16384; // conservative per-edge canvas cap (Chrome/Firefox)
-const MAX_SLICES = 50; // safety net against endless/infinite-scroll pages
 const PANE_MIN_VH_RATIO = 0.25; // a scroller must be at least this tall (share of viewport height)
 const PANE_MIN_AREA_RATIO = 0.06; // ...and cover at least this share of the viewport area
 const FULLPAGE_STYLE_ID = 'snapstack-fullpage';
@@ -625,7 +638,7 @@ async function captureFull() {
         cols[c].prevY = realYs[c];
       }
       if (!advancing) break;
-      if (i + 1 >= MAX_SLICES) {
+      if (i + 1 >= cfg.maxSlices) {
         truncated = true;
         break;
       }
@@ -659,7 +672,7 @@ async function captureFull() {
   if (!resp.ok) throw new Error(`server responded ${resp.status}`);
   const { count } = await resp.json();
   // No silent caps: tell the user when a too-long page was only partially captured.
-  if (truncated) await showNotification(api.i18n.getMessage('fullPageTruncated', [String(MAX_SLICES)]));
+  if (truncated) await showNotification(api.i18n.getMessage('fullPageTruncated', [String(cfg.maxSlices)]));
   return count;
 }
 
@@ -738,6 +751,12 @@ api.alarms.onAlarm.addListener((alarm) => {
 // Clicking the "server out of date" notification opens the update guide.
 api.notifications?.onClicked.addListener((id) => {
   if (id === OUTDATED_NOTIF_ID) api.tabs.create({ url: UPDATE_URL });
+});
+
+// Keyboard shortcut (manifest `commands`): trigger a visible-tab capture. The
+// binding is set/changed in the browser's own shortcuts UI (per-browser, local).
+api.commands?.onCommand.addListener((command) => {
+  if (command === 'capture') onTrigger();
 });
 
 // Sync once when the worker/event page spins up.

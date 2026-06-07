@@ -80,5 +80,85 @@
   "serverOutdatedAction": {
     "message": "Update it",
     "description": "Link text appended after serverOutdated, pointing to the server update guide."
+  },
+  "toolbarOpenSettings": {
+    "message": "Settings",
+    "description": "Toolbar button: open the extension's options page."
+  },
+  "optionsTitle": {
+    "message": "snapstack settings",
+    "description": "Title of the options page (browser tab + heading)."
+  },
+  "optionsSharedTitle": {
+    "message": "Common to all your browsers",
+    "description": "Heading of the server-owned, shared settings section."
+  },
+  "optionsSharedHint": {
+    "message": "These capture settings are stored on the server and apply to every browser running the extension.",
+    "description": "Explanation under the shared-settings heading."
+  },
+  "optionsLocalTitle": {
+    "message": "This browser only",
+    "description": "Heading of the per-browser (local) settings section."
+  },
+  "optionsLocalHint": {
+    "message": "Specific to this browser.",
+    "description": "Explanation under the local-settings heading."
+  },
+  "optionsFieldFormat": {
+    "message": "Image format",
+    "description": "Options field label: capture image format (WebP/PNG)."
+  },
+  "optionsFieldQuality": {
+    "message": "Quality (0–1)",
+    "description": "Options field label: lossy encoding quality, 0 to 1."
+  },
+  "optionsFieldMaxEdge": {
+    "message": "Max edge in px (0 = no downscale)",
+    "description": "Options field label: longest-edge downscale target in pixels."
+  },
+  "optionsFieldMaxSlices": {
+    "message": "Full-page slice cap",
+    "description": "Options field label: max stitched slices for a full-page capture."
+  },
+  "optionsFieldServerBase": {
+    "message": "Server address",
+    "description": "Options field label: local URL of the snapstack server."
+  },
+  "optionsFieldShortcut": {
+    "message": "Capture shortcut",
+    "description": "Options field label: the keyboard shortcut that triggers a capture."
+  },
+  "optionsShortcutEdit": {
+    "message": "Change…",
+    "description": "Button that opens the browser's extension-shortcuts settings."
+  },
+  "optionsShortcutHint": {
+    "message": "Set or change the shortcut in your browser's extension shortcuts settings.",
+    "description": "Hint under the keyboard-shortcut row."
+  },
+  "optionsShortcutNone": {
+    "message": "Not set",
+    "description": "Shown when no keyboard shortcut is assigned."
+  },
+  "optionsSave": {
+    "message": "Save",
+    "description": "Button: persist the settings of a section."
+  },
+  "optionsSaved": {
+    "message": "Saved",
+    "description": "Confirmation shown after settings are saved."
+  },
+  "optionsServerUnreachable": {
+    "message": "Server unreachable — start or update the snapstack server to edit the shared settings.",
+    "description": "Shown when the shared (server) settings can't be loaded."
+  },
+  "optionsSaveError": {
+    "message": "Could not save — check the server.",
+    "description": "Shown when saving settings fails."
+  },
+  "commandCapture": {
+    "message": "Capture the visible tab",
+    "description": "Description of the keyboard-shortcut command, shown in the browser's shortcuts UI."
   }
 }

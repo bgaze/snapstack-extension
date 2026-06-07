@@ -17,7 +17,7 @@ const dist = path.join(root, 'dist');
 
 // Runtime assets shipped in every package (the branding `assets/`, README,
 // PRIVACY, scripts/ and dist/ are intentionally excluded).
-const RUNTIME = ['background.js', 'popup.html', 'popup.css', 'popup.js', 'overlay.js', '_locales', 'icons'];
+const RUNTIME = ['background.js', 'popup.html', 'popup.css', 'popup.js', 'options.html', 'options.css', 'options.js', 'overlay.js', '_locales', 'icons'];
 
 // Chrome: service_worker only; drop the Firefox-only gecko settings.
 function chromeManifest(m) {

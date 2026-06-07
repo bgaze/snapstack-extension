@@ -25,5 +25,25 @@
     "placeholders": { "error": { "content": "$1" } }
   },
   "serverOutdated": { "message": "snapstack サーバーが古くなっています。" },
-  "serverOutdatedAction": { "message": "更新する" }
+  "serverOutdatedAction": { "message": "更新する" },
+  "toolbarOpenSettings": { "message": "設定" },
+  "optionsTitle": { "message": "snapstack の設定" },
+  "optionsSharedTitle": { "message": "すべてのブラウザーで共通" },
+  "optionsSharedHint": { "message": "これらのキャプチャ設定はサーバーに保存され、拡張機能をインストールしたすべてのブラウザーに適用されます。" },
+  "optionsLocalTitle": { "message": "このブラウザーのみ" },
+  "optionsLocalHint": { "message": "このブラウザー固有の設定です。" },
+  "optionsFieldFormat": { "message": "画像形式" },
+  "optionsFieldQuality": { "message": "画質（0〜1）" },
+  "optionsFieldMaxEdge": { "message": "最大辺の長さ（px、0 = 縮小なし）" },
+  "optionsFieldMaxSlices": { "message": "ページ全体キャプチャのスライス上限" },
+  "optionsFieldServerBase": { "message": "サーバーアドレス" },
+  "optionsFieldShortcut": { "message": "キャプチャのショートカット" },
+  "optionsShortcutEdit": { "message": "変更…" },
+  "optionsShortcutHint": { "message": "ブラウザーの拡張機能ショートカット設定でショートカットを設定または変更してください。" },
+  "optionsShortcutNone": { "message": "未設定" },
+  "optionsSave": { "message": "保存" },
+  "optionsSaved": { "message": "保存しました" },
+  "optionsServerUnreachable": { "message": "サーバーに接続できません — 共有設定を編集するには snapstack サーバーを起動または更新してください。" },
+  "optionsSaveError": { "message": "保存できませんでした — サーバーを確認してください。" },
+  "commandCapture": { "message": "表示中のタブをキャプチャ" }
 }

@@ -50,7 +50,10 @@ Click the snapstack icon to open the dropdown:
   browser-internal pages.)
 - **Grid** — your captures, two per row, each tagged with its **number** (the handle your LLM uses). Hover for
   **Delete** / **Copy path**; click a shot to open it full-size.
-- **Toolbar** — **Delete all**, **Open folder** (reveal the stack in your file manager), **Copy all paths**.
+- **Toolbar** — **Settings** (open the options page), **Delete all**, **Open folder** (reveal the stack in your file
+  manager), **Copy all paths**.
+- **Keyboard shortcut** — capture the current tab without opening the dropdown (default <kbd>Ctrl/Cmd+Shift+S</kbd>);
+  set or change it from the options page.
 
 A typical session: capture a few screens → tell your AI *"have a look at my screenshots"* → it reads them and
 answers. When you're done, clear them (from the dropdown, or let the AI do it).
@@ -182,11 +185,16 @@ Now you just capture in the browser and type `snap` — Claude reads exactly wha
 - **Captures saved as PNG** — your browser can't encode WebP, so snapstack falls back to PNG automatically. Normal.
 
 <details>
-<summary>Advanced settings</summary>
+<summary>Settings</summary>
 
-The defaults work out of the box. Power users can tweak these via the extension's `storage.local`:
-`serverBase` (`http://127.0.0.1:4123`), `format` (`webp`/`png`), `quality` (`0.85`), `maxEdge` (`1568` px,
-`0` = no downscale).
+Open the options page from the dropdown's **Settings** button (gear icon). It has two sections:
+
+- **🌐 Common to all your browsers** — the capture policy, **stored on the server**, so one edit applies to every
+  browser running the extension: `format` (`webp`/`png`), `quality` (`0.85`), `maxEdge` (`1568` px, `0` = no
+  downscale), `maxSlices` (`50`, the full-page slice cap). The extension fetches it before each capture and falls
+  back to these defaults when the server is unreachable.
+- **💻 This browser only** — `serverBase` (`http://127.0.0.1:4123`), local to this browser, plus the capture
+  **keyboard shortcut** (set/changed in your browser's own extension-shortcuts settings).
 </details>
 
 ## Packaging for the stores

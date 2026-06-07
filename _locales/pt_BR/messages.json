@@ -25,5 +25,25 @@
     "placeholders": { "error": { "content": "$1" } }
   },
   "serverOutdated": { "message": "O servidor snapstack está desatualizado." },
-  "serverOutdatedAction": { "message": "Atualizar" }
+  "serverOutdatedAction": { "message": "Atualizar" },
+  "toolbarOpenSettings": { "message": "Configurações" },
+  "optionsTitle": { "message": "Configurações do snapstack" },
+  "optionsSharedTitle": { "message": "Comum a todos os seus navegadores" },
+  "optionsSharedHint": { "message": "Estas configurações de captura ficam salvas no servidor e se aplicam a todos os navegadores em que a extensão está instalada." },
+  "optionsLocalTitle": { "message": "Apenas este navegador" },
+  "optionsLocalHint": { "message": "Específico deste navegador." },
+  "optionsFieldFormat": { "message": "Formato da imagem" },
+  "optionsFieldQuality": { "message": "Qualidade (0–1)" },
+  "optionsFieldMaxEdge": { "message": "Borda máxima em px (0 = sem redução)" },
+  "optionsFieldMaxSlices": { "message": "Limite de fatias de página inteira" },
+  "optionsFieldServerBase": { "message": "Endereço do servidor" },
+  "optionsFieldShortcut": { "message": "Atalho de captura" },
+  "optionsShortcutEdit": { "message": "Alterar…" },
+  "optionsShortcutHint": { "message": "Defina ou altere o atalho nas configurações de atalhos de extensões do seu navegador." },
+  "optionsShortcutNone": { "message": "Não definido" },
+  "optionsSave": { "message": "Salvar" },
+  "optionsSaved": { "message": "Salvo" },
+  "optionsServerUnreachable": { "message": "Servidor inacessível — inicie ou atualize o servidor do snapstack para editar as configurações compartilhadas." },
+  "optionsSaveError": { "message": "Não foi possível salvar — verifique o servidor." },
+  "commandCapture": { "message": "Capturar a aba visível" }
 }

@@ -6,7 +6,7 @@ export default [
   js.configs.recommended,
   {
     // Extension runtime — classic scripts loaded by the browser / service worker.
-    files: ['background.js', 'overlay.js', 'popup.js'],
+    files: ['background.js', 'overlay.js', 'popup.js', 'options.js'],
     languageOptions: {
       ecmaVersion: 2023,
       sourceType: 'script',

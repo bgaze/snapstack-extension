@@ -25,5 +25,25 @@
     "placeholders": { "error": { "content": "$1" } }
   },
   "serverOutdated": { "message": "Il server snapstack è obsoleto." },
-  "serverOutdatedAction": { "message": "Aggiorna" }
+  "serverOutdatedAction": { "message": "Aggiorna" },
+  "toolbarOpenSettings": { "message": "Impostazioni" },
+  "optionsTitle": { "message": "Impostazioni snapstack" },
+  "optionsSharedTitle": { "message": "Comune a tutti i tuoi browser" },
+  "optionsSharedHint": { "message": "Queste impostazioni di cattura sono salvate sul server e si applicano a ogni browser in cui è installata l'estensione." },
+  "optionsLocalTitle": { "message": "Solo questo browser" },
+  "optionsLocalHint": { "message": "Specifico di questo browser." },
+  "optionsFieldFormat": { "message": "Formato immagine" },
+  "optionsFieldQuality": { "message": "Qualità (0–1)" },
+  "optionsFieldMaxEdge": { "message": "Bordo massimo in px (0 = nessuna riduzione)" },
+  "optionsFieldMaxSlices": { "message": "Limite di sezioni pagina intera" },
+  "optionsFieldServerBase": { "message": "Indirizzo del server" },
+  "optionsFieldShortcut": { "message": "Scorciatoia di cattura" },
+  "optionsShortcutEdit": { "message": "Modifica…" },
+  "optionsShortcutHint": { "message": "Imposta o modifica la scorciatoia nelle impostazioni delle scorciatoie per le estensioni del tuo browser." },
+  "optionsShortcutNone": { "message": "Non impostata" },
+  "optionsSave": { "message": "Salva" },
+  "optionsSaved": { "message": "Salvato" },
+  "optionsServerUnreachable": { "message": "Server non raggiungibile — avvia o aggiorna il server snapstack per modificare le impostazioni condivise." },
+  "optionsSaveError": { "message": "Impossibile salvare — controlla il server." },
+  "commandCapture": { "message": "Cattura la scheda visibile" }
 }
