@@ -9,7 +9,7 @@ name: Publish
 #   Chrome Web Store: CHROME_EXTENSION_ID, CHROME_CLIENT_ID, CHROME_CLIENT_SECRET,
 #                     CHROME_REFRESH_TOKEN
 #   Firefox AMO     : AMO_JWT_ISSUER, AMO_JWT_SECRET
-# Manual fallback if a store step is not wired yet: docs/store-submission.md.
+# Manual fallback if a store step is not wired yet: upload the built zips through each store's dashboard.
 
 on:
   push:
