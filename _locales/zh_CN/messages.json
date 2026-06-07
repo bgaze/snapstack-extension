@@ -18,5 +18,6 @@
     "message": "截图失败：$error$",
     "placeholders": { "error": { "content": "$1" } }
   },
-  "serverOutdated": { "message": "snapstack 服务器版本过旧，请更新。" }
+  "serverOutdated": { "message": "snapstack 服务器版本过旧。" },
+  "serverOutdatedAction": { "message": "更新" }
 }

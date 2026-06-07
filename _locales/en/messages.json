@@ -59,7 +59,11 @@
     }
   },
   "serverOutdated": {
-    "message": "The snapstack server is out of date — please update it.",
-    "description": "Notification + popup banner when the server's wire protocol is older than the extension (version skew)."
+    "message": "The snapstack server is out of date.",
+    "description": "Notification + popup banner statement when the server's wire protocol is older than the extension (version skew)."
+  },
+  "serverOutdatedAction": {
+    "message": "Update it",
+    "description": "Link text appended after serverOutdated, pointing to the server update guide."
   }
 }

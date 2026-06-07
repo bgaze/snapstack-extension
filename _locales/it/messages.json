@@ -18,5 +18,6 @@
     "message": "Cattura non riuscita: $error$",
     "placeholders": { "error": { "content": "$1" } }
   },
-  "serverOutdated": { "message": "Il server snapstack è obsoleto: aggiornalo." }
+  "serverOutdated": { "message": "Il server snapstack è obsoleto." },
+  "serverOutdatedAction": { "message": "Aggiorna" }
 }

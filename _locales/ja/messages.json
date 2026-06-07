@@ -18,5 +18,6 @@
     "message": "キャプチャに失敗しました: $error$",
     "placeholders": { "error": { "content": "$1" } }
   },
-  "serverOutdated": { "message": "snapstack サーバーが古くなっています。更新してください。" }
+  "serverOutdated": { "message": "snapstack サーバーが古くなっています。" },
+  "serverOutdatedAction": { "message": "更新する" }
 }

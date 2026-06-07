@@ -9,6 +9,9 @@ const t = (key, subs) => api.i18n?.getMessage(key, subs) || key;
 
 const DEFAULTS = { serverBase: 'http://127.0.0.1:4123' };
 
+// Server README install/update section — target of the version-skew nudge link.
+const UPDATE_URL = 'https://github.com/bgaze/snapstack-server#install--run';
+
 async function getConfig() {
   try {
     return { ...DEFAULTS, ...(await api.storage?.local.get(DEFAULTS)) };
@@ -232,9 +235,16 @@ async function showCompatBanner() {
     /* storage unavailable */
   }
   if (reason === 'outdated') {
-    banner.textContent = t('serverOutdated');
+    // "<statement> <update it →>" — the action word links to the update guide.
+    const link = document.createElement('a');
+    link.href = UPDATE_URL;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.textContent = t('serverOutdatedAction');
+    banner.replaceChildren(document.createTextNode(`${t('serverOutdated')} `), link);
     banner.hidden = false;
   } else {
+    banner.replaceChildren();
     banner.hidden = true;
   }
 }

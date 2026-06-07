@@ -18,5 +18,6 @@
     "message": "Aufnahme fehlgeschlagen: $error$",
     "placeholders": { "error": { "content": "$1" } }
   },
-  "serverOutdated": { "message": "Der snapstack-Server ist veraltet – bitte aktualisieren Sie ihn." }
+  "serverOutdated": { "message": "Der snapstack-Server ist veraltet." },
+  "serverOutdatedAction": { "message": "Aktualisieren" }
 }

@@ -18,5 +18,6 @@
     "message": "Не удалось сделать снимок: $error$",
     "placeholders": { "error": { "content": "$1" } }
   },
-  "serverOutdated": { "message": "Сервер snapstack устарел — обновите его." }
+  "serverOutdated": { "message": "Сервер snapstack устарел." },
+  "serverOutdatedAction": { "message": "Обновить" }
 }

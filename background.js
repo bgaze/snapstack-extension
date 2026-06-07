@@ -23,6 +23,10 @@ const COLOR_WARN = '#D97706'; // amber: server reachable but its protocol is beh
 // Bump in lock-step with the server's PROTOCOL_VERSION on a breaking /push change.
 const CLIENT_PROTOCOL = 1;
 
+// Where the "update it" nudge points: the server README's install/update section.
+const UPDATE_URL = 'https://github.com/bgaze/snapstack-server#install--run';
+const OUTDATED_NOTIF_ID = 'snapstack-server-outdated';
+
 async function getConfig() {
   try {
     const stored = await api.storage?.local.get(DEFAULTS);
@@ -85,7 +89,10 @@ async function setCompat(reason) {
   } catch {
     /* storage unavailable */
   }
-  if (reason === 'outdated') await showNotification(api.i18n.getMessage('serverOutdated'));
+  if (reason === 'outdated') {
+    const text = `${api.i18n.getMessage('serverOutdated')} ${api.i18n.getMessage('serverOutdatedAction')}`;
+    await showNotification(text, OUTDATED_NOTIF_ID); // click opens UPDATE_URL (see onClicked below)
+  }
 }
 
 // Reflect server state on the badge: an out-of-date server gets a distinct amber
@@ -180,14 +187,18 @@ function flashOk(count) {
   setTimeout(() => setBadge(count > 0 ? String(count) : '', COLOR_IDLE), 600);
 }
 
-async function showNotification(message) {
+async function showNotification(message, id) {
   try {
-    await api.notifications.create({
+    const opts = {
       type: 'basic',
       iconUrl: api.runtime.getURL('icons/icon-128.png'),
       title: 'snapstack',
       message,
-    });
+    };
+    // A stable id lets onClicked recognise this notification (and replaces any
+    // previous one of the same id instead of stacking duplicates).
+    if (id) await api.notifications.create(id, opts);
+    else await api.notifications.create(opts);
   } catch {
     /* notifications unavailable */
   }
@@ -327,6 +338,11 @@ api.windows?.onFocusChanged.addListener((windowId) => {
 api.alarms.create('snapstack-sync', { periodInMinutes: 1 });
 api.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === 'snapstack-sync') syncBadge();
+});
+
+// Clicking the "server out of date" notification opens the update guide.
+api.notifications?.onClicked.addListener((id) => {
+  if (id === OUTDATED_NOTIF_ID) api.tabs.create({ url: UPDATE_URL });
 });
 
 // Sync once when the worker/event page spins up.
