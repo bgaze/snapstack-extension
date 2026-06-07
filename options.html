@@ -23,20 +23,27 @@
             <option value="png">PNG</option>
             <option value="jpg">JPEG</option>
           </select>
+          <span class="help" data-i18n="optionsHelpFormat"></span>
         </label>
         <label class="field">
           <span data-i18n="optionsFieldQuality"></span>
-          <input id="quality" type="number" min="0" max="1" step="0.05" aria-describedby="err-quality" />
+          <div class="inline">
+            <input id="quality" type="number" min="0" max="100" step="1" aria-describedby="err-quality" />
+            <span class="unit">%</span>
+          </div>
+          <span class="help" data-i18n="optionsHelpQuality"></span>
           <span class="field-error" id="err-quality"></span>
         </label>
         <label class="field">
-          <span data-i18n="optionsFieldMaxEdge"></span>
-          <input id="maxEdge" type="number" min="0" step="1" aria-describedby="err-maxEdge" />
-          <span class="field-error" id="err-maxEdge"></span>
+          <span data-i18n="optionsFieldMaxWidth"></span>
+          <input id="maxWidth" type="number" min="0" step="1" aria-describedby="err-maxWidth" />
+          <span class="help" data-i18n="optionsHelpMaxWidth"></span>
+          <span class="field-error" id="err-maxWidth"></span>
         </label>
         <label class="field">
           <span data-i18n="optionsFieldMaxSlices"></span>
           <input id="maxSlices" type="number" min="1" step="1" aria-describedby="err-maxSlices" />
+          <span class="help" data-i18n="optionsHelpMaxSlices"></span>
           <span class="field-error" id="err-maxSlices"></span>
         </label>
 

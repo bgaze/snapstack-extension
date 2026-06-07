@@ -6,9 +6,9 @@ const api = globalThis.browser ?? globalThis.chrome;
 
 const DEFAULTS = {
   serverBase: 'http://127.0.0.1:4123',
-  format: 'webp', // 'webp' | 'png'
-  quality: 0.85, // lossy quality for webp/jpeg
-  maxEdge: 1568, // downscale the longest edge to this many px (0 = no downscale)
+  format: 'webp', // 'webp' | 'png' | 'jpg'
+  quality: 0.85, // lossy quality for webp/jpeg, 0..1
+  maxWidth: 1568, // downscale captures wider than this to this width in px (0 = no downscale)
   maxSlices: 50, // full-page capture: safety net against endless/infinite-scroll pages
 };
 
@@ -36,7 +36,7 @@ async function getConfig() {
   } catch {
     cfg = { ...DEFAULTS };
   }
-  // The capture policy (format/quality/maxEdge/maxSlices) is owned by the server
+  // The capture policy (format/quality/maxWidth/maxSlices) is owned by the server
   // so a single edit applies to every browser the user runs; serverBase stays
   // local. Overlay the server's effective policy. Fall back to DEFAULTS if the
   // server is unreachable or predates /config (404) — capture must never break,
@@ -127,18 +127,16 @@ async function dataUrlToBitmap(dataUrl) {
 }
 
 // Re-encode `bitmap` to the configured format. `downscale` picks the resize rule:
-//   'longest' — cap the longest edge to cfg.maxEdge (the viewport/zone capture);
-//   'skip'    — no resize (the full-page stitch has already sized the canvas, so
-//               re-applying the longest-edge rule would crush a tall page).
-async function encode(bitmap, cfg, downscale = 'longest') {
+//   'width' — cap the WIDTH to cfg.maxWidth (the viewport/zone capture), keeping
+//             aspect ratio; a tall, narrow shot keeps its full height. Consistent
+//             with the full-page stitch, which also caps width (not the longest edge).
+//   'skip'  — no resize (the full-page stitch has already sized the canvas).
+async function encode(bitmap, cfg, downscale = 'width') {
   let { width, height } = bitmap;
-  if (downscale === 'longest' && cfg.maxEdge > 0) {
-    const longest = Math.max(width, height);
-    if (longest > cfg.maxEdge) {
-      const scale = cfg.maxEdge / longest;
-      width = Math.round(width * scale);
-      height = Math.round(height * scale);
-    }
+  if (downscale === 'width' && cfg.maxWidth > 0 && width > cfg.maxWidth) {
+    const scale = cfg.maxWidth / width;
+    width = cfg.maxWidth;
+    height = Math.round(height * scale);
   }
 
   const canvas = new OffscreenCanvas(width, height);
@@ -553,7 +551,7 @@ async function captureFull() {
   const physW = view.w * dpr;
   const fullCssH = Math.max(view.h, ...columns.map((c) => c.contentTop + c.scrollH));
   const physH = fullCssH * dpr;
-  const widthCap = cfg.maxEdge > 0 ? cfg.maxEdge / physW : 1;
+  const widthCap = cfg.maxWidth > 0 ? cfg.maxWidth / physW : 1;
   const scale = Math.min(1, widthCap, MAX_CANVAS_PX / physW, MAX_CANVAS_PX / physH);
   const canvasW = Math.max(1, Math.round(physW * scale));
   const canvasH = Math.max(1, Math.round(physH * scale));

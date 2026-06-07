@@ -5,12 +5,12 @@ const api = globalThis.browser ?? globalThis.chrome;
 const t = (key, subs) => api.i18n?.getMessage(key, subs) || key;
 
 // serverBase is LOCAL to this browser (chrome.storage.local). The capture policy
-// (format / quality / maxEdge / maxSlices) is owned by the SERVER and shared
+// (format / quality / maxWidth / maxSlices) is owned by the SERVER and shared
 // across the user's browsers — edited here via GET/POST /config. POLICY_DEFAULTS
 // only pre-fills the form when the server is unreachable; it mirrors the server's
 // DEFAULT_POLICY and background.js's DEFAULTS.
 const DEFAULTS = { serverBase: 'http://127.0.0.1:4123' };
-const POLICY_DEFAULTS = { format: 'webp', quality: 0.85, maxEdge: 1568, maxSlices: 50 };
+const POLICY_DEFAULTS = { format: 'webp', quality: 0.85, maxWidth: 1568, maxSlices: 50 };
 
 const $ = (id) => document.getElementById(id);
 
@@ -40,14 +40,14 @@ function currentBase() {
 
 function fillPolicy(p) {
   $('format').value = p.format;
-  $('quality').value = p.quality;
-  $('maxEdge').value = p.maxEdge;
+  $('quality').value = Math.round(p.quality * 100); // stored 0..1, shown as a percentage
+  $('maxWidth').value = p.maxWidth;
   $('maxSlices').value = p.maxSlices;
   clearFieldErrors();
 }
 
 function clearFieldErrors() {
-  for (const id of ['quality', 'maxEdge', 'maxSlices']) $(`err-${id}`).textContent = '';
+  for (const id of ['quality', 'maxWidth', 'maxSlices']) $(`err-${id}`).textContent = '';
 }
 
 // Client-side mirror of the server schema: a bad value surfaces INLINE at its
@@ -56,29 +56,30 @@ function clearFieldErrors() {
 function readValidPolicy() {
   clearFieldErrors();
   const qStr = $('quality').value.trim();
-  const meStr = $('maxEdge').value.trim();
+  const mwStr = $('maxWidth').value.trim();
   const msStr = $('maxSlices').value.trim();
-  const q = Number(qStr);
-  const me = Number(meStr);
+  const q = Number(qStr); // percentage, 0..100
+  const mw = Number(mwStr);
   const ms = Number(msStr);
   let ok = true;
-  if (qStr === '' || !Number.isFinite(q) || q < 0 || q > 1) {
+  if (qStr === '' || !Number.isInteger(q) || q < 0 || q > 100) {
     $('err-quality').textContent = t('optionsErrQuality');
     ok = false;
   }
-  if (meStr === '' || !Number.isInteger(me) || me < 0) {
-    $('err-maxEdge').textContent = t('optionsErrMaxEdge');
+  if (mwStr === '' || !Number.isInteger(mw) || mw < 0) {
+    $('err-maxWidth').textContent = t('optionsErrMaxWidth');
     ok = false;
   }
   if (msStr === '' || !Number.isInteger(ms) || ms < 1) {
     $('err-maxSlices').textContent = t('optionsErrMaxSlices');
     ok = false;
   }
-  return ok ? { format: $('format').value, quality: q, maxEdge: me, maxSlices: ms } : null;
+  // Quality is stored 0..1 on the server; convert from the displayed percentage.
+  return ok ? { format: $('format').value, quality: q / 100, maxWidth: mw, maxSlices: ms } : null;
 }
 
 function setSharedEnabled(on) {
-  for (const id of ['format', 'quality', 'maxEdge', 'maxSlices', 'saveShared', 'resetShared']) {
+  for (const id of ['format', 'quality', 'maxWidth', 'maxSlices', 'saveShared', 'resetShared']) {
     $(id).disabled = !on;
   }
 }

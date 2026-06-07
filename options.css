@@ -71,6 +71,19 @@ body {
   margin: 6px 0 0;
 }
 
+/* Per-field help line under the input. */
+.field .help {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+/* Trailing unit (e.g. "%") next to a numeric input. */
+.unit {
+  flex: 0 0 auto;
+  color: #6b7280;
+  font-weight: 600;
+}
+
 .field {
   display: flex;
   flex-direction: column;

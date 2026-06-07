@@ -106,20 +106,36 @@
     "description": "Explanation under the local-settings heading."
   },
   "optionsFieldFormat": {
-    "message": "Image format",
-    "description": "Options field label: capture image format (WebP/PNG)."
+    "message": "Capture image format",
+    "description": "Options field label: capture image format (WebP/PNG/JPEG)."
+  },
+  "optionsHelpFormat": {
+    "message": "WebP is recommended: smaller images, so fewer tokens used when the LLM reads them.",
+    "description": "Help text under the image-format field."
   },
   "optionsFieldQuality": {
-    "message": "Quality (0–1)",
-    "description": "Options field label: lossy encoding quality, 0 to 1."
+    "message": "Capture quality",
+    "description": "Options field label: lossy encoding quality, shown as a percentage."
   },
-  "optionsFieldMaxEdge": {
-    "message": "Max edge in px (0 = no downscale)",
-    "description": "Options field label: longest-edge downscale target in pixels."
+  "optionsHelpQuality": {
+    "message": "A value between 70 and 85 % is recommended — enough quality while keeping images small. (No effect on PNG, which is lossless.)",
+    "description": "Help text under the quality field."
+  },
+  "optionsFieldMaxWidth": {
+    "message": "Maximum image width",
+    "description": "Options field label: max capture width in pixels."
+  },
+  "optionsHelpMaxWidth": {
+    "message": "Wider captures are scaled down to this width. This limits the tokens used when the LLM reads them. Set 0 to disable resizing.",
+    "description": "Help text under the maximum-width field."
   },
   "optionsFieldMaxSlices": {
-    "message": "Full-page slice cap",
+    "message": "Maximum slices for full-page capture",
     "description": "Options field label: max stitched slices for a full-page capture."
+  },
+  "optionsHelpMaxSlices": {
+    "message": "A full-page capture is rebuilt by stacking several screens. This cap avoids capturing endlessly long or infinite-scroll pages.",
+    "description": "Help text under the full-page slice cap field."
   },
   "optionsFieldServerBase": {
     "message": "Server address",
@@ -182,12 +198,12 @@
     "description": "Firefox shortcut instructions (multi-line, \\n-separated); the text inside {…} becomes a link."
   },
   "optionsErrQuality": {
-    "message": "Enter a number between 0 and 1.",
-    "description": "Inline validation error for the quality field."
+    "message": "Enter a whole number between 0 and 100.",
+    "description": "Inline validation error for the quality (%) field."
   },
-  "optionsErrMaxEdge": {
+  "optionsErrMaxWidth": {
     "message": "Enter a whole number of 0 or more.",
-    "description": "Inline validation error for the max edge field."
+    "description": "Inline validation error for the maximum-width field."
   },
   "optionsErrMaxSlices": {
     "message": "Enter a whole number of 1 or more.",

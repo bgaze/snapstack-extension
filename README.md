@@ -190,9 +190,10 @@ Now you just capture in the browser and type `snap` — Claude reads exactly wha
 Open the options page from the dropdown's **Settings** button (gear icon). It has two sections:
 
 - **🌐 Common to all your browsers** — the capture policy, **stored on the server**, so one edit applies to every
-  browser running the extension: `format` (`webp`/`png`), `quality` (`0.85`), `maxEdge` (`1568` px, `0` = no
-  downscale), `maxSlices` (`50`, the full-page slice cap). The extension fetches it before each capture and falls
-  back to these defaults when the server is unreachable.
+  browser running the extension: `format` (`webp`/`png`/`jpg`), `quality` (shown as a percentage), `maxWidth`
+  (`1568` px — wider captures are scaled down to this width; `0` = no downscale), `maxSlices` (`50`, the full-page
+  slice cap). The extension fetches it before each capture and falls back to these defaults when the server is
+  unreachable.
 - **💻 This browser only** — `serverBase` (`http://127.0.0.1:4123`), local to this browser, plus the capture
   **keyboard shortcut** (set/changed in your browser's own extension-shortcuts settings).
 </details>
