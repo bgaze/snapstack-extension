@@ -112,9 +112,13 @@ async function dataUrlToBitmap(dataUrl) {
   return createImageBitmap(blob);
 }
 
-async function encode(bitmap, cfg) {
+// Re-encode `bitmap` to the configured format. `downscale` picks the resize rule:
+//   'longest' — cap the longest edge to cfg.maxEdge (the viewport/zone capture);
+//   'skip'    — no resize (the full-page stitch has already sized the canvas, so
+//               re-applying the longest-edge rule would crush a tall page).
+async function encode(bitmap, cfg, downscale = 'longest') {
   let { width, height } = bitmap;
-  if (cfg.maxEdge > 0) {
+  if (downscale === 'longest' && cfg.maxEdge > 0) {
     const longest = Math.max(width, height);
     if (longest > cfg.maxEdge) {
       const scale = cfg.maxEdge / longest;
@@ -140,7 +144,9 @@ async function encode(bitmap, cfg) {
 
 // Crop a bitmap to `crop` (image px), clamped to the bitmap's real size so a
 // stray devicePixelRatio or off-by-one can never read outside the source.
-async function cropBitmap(bitmap, crop) {
+// `closeSource` defaults to true; pass false when one shot feeds several crops
+// (multi-pane), so the shared source isn't detached after the first column.
+async function cropBitmap(bitmap, crop, closeSource = true) {
   const sx = Math.max(0, Math.min(crop.x, bitmap.width));
   const sy = Math.max(0, Math.min(crop.y, bitmap.height));
   const sw = Math.max(1, Math.min(crop.w, bitmap.width - sx));
@@ -148,7 +154,7 @@ async function cropBitmap(bitmap, crop) {
   const canvas = new OffscreenCanvas(sw, sh);
   canvas.getContext('2d').drawImage(bitmap, sx, sy, sw, sh, 0, 0, sw, sh);
   const cropped = await createImageBitmap(canvas);
-  bitmap.close?.();
+  if (closeSource) bitmap.close?.();
   return cropped;
 }
 
@@ -287,6 +293,392 @@ async function onTriggerZone() {
   }
 }
 
+// --- full-page capture ----------------------------------------------------
+// captureVisibleTab only ever sees the visible viewport, so a full-page shot is
+// built by scrolling the page one screen at a time, photographing each step, and
+// stitching the slices onto one tall canvas. This is the only fully-local,
+// no-extra-permission, cross-browser path (CDP/debugger would be Chrome-only,
+// pop an alarming banner, and still not cover inner scroll containers).
+//
+// The intelligence is in WHAT we scroll. fpPrep detects the dominant scroller and
+// picks one of two modes:
+//   • 'root' — the window scrolls (articles, search results). Fixed/sticky
+//     elements are frozen (so a sticky header is shot once), and we stitch the
+//     full viewport at each scroll offset.
+//   • 'pane' — an inner overflow container is the main scroller (app shells:
+//     fixed header + sidebar + scrollable content). The first slice is the FULL
+//     viewport (so the chrome — header/sidebar — is captured once); later slices
+//     are just the pane, stacked below in its column. Undrawn margins are filled
+//     with the page background. Only sticky elements INSIDE the pane are frozen.
+//
+// Multiple scrollers: 'pane' mode detects a set of disjoint vertical scrollers
+// (an app shell's content + a scrollable sidebar, a board's columns) and unrolls
+// EACH in its own column — they are scrolled in lockstep, one viewport snapshot
+// per step, each clipped to its rect. Horizontal overflow is ignored (only the
+// columns visible in the viewport are captured). Nested scrollers: only the
+// outermost is unrolled; a window-scrolled page uses 'root' mode instead.
+//
+// Robust freeze: a stylesheet rule keyed on a marker attribute (with !important)
+// + a re-scan before every slice, so a header the page re-pins in JS mid-scroll
+// is still neutralized. Page-side steps run as separate scripting.executeScript
+// calls and share state through the DOM (a <style> node + marker attributes),
+// the same trick overlay.js uses — no long-lived content script.
+//
+// Anti-infinite-scroll: the target height is snapshotted ONCE in fpPrep, so
+// content that lazy-loads while we scroll is never chased; we also stop as soon
+// as scrolling stops advancing, and hard-cap the slice count.
+const FULL_UNAVAILABLE = '__full_unavailable__';
+const SLICE_DELAY_MS = 550; // throttle: stay under Chrome's ~2 captureVisibleTab/s
+const SETTLE_MS = 150; // let the page settle (sticky reflow, lazy content) after each scroll
+const FREEZE_PAINT_MS = 50; // let a freshly-hidden header repaint before the snapshot
+const MAX_CANVAS_PX = 16384; // conservative per-edge canvas cap (Chrome/Firefox)
+const MAX_SLICES = 50; // safety net against endless/infinite-scroll pages
+const PANE_MIN_VH_RATIO = 0.25; // a scroller must be at least this tall (share of viewport height)
+const PANE_MIN_AREA_RATIO = 0.06; // ...and cover at least this share of the viewport area
+const FULLPAGE_STYLE_ID = 'snapstack-fullpage';
+const FULLPAGE_POS_ATTR = 'data-snapstack-pos';
+const FULLPAGE_SCROLLER_ATTR = 'data-snapstack-scroller';
+const FULLPAGE_TOP_ATTR = 'data-snapstack-scrolltop';
+
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// --- page-side helpers (serialized and injected, run in the page) ---
+// Self-contained: they read only their args + DOM globals, never this module.
+
+// Detect the vertical scroll container(s) and prep the page. Also probes
+// injectability (browser-internal pages reject the injection). Vertical scroll
+// only; horizontal overflow is ignored.
+//
+// Returns { mode, view:{w,h}, bg, dpr, origin } plus, by mode:
+//   'pane' → panes: [{ scrollH, clip:{x,y,w,h} }]  (one per detected scroller)
+//   'root' → scrollH, clip:{x,y,w,h}               (the window / full viewport)
+function fpPrep(styleId, posAttr, scrollerAttr, topAttr, minVh, minArea) {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const dpr = window.devicePixelRatio || 1;
+  const origin = { x: window.scrollX, y: window.scrollY };
+  const view = { w: vw, h: vh };
+
+  // One stylesheet: kill smooth scrolling, and HIDE any element we later mark
+  // with posAttr. Hiding (not re-positioning) is robust against a page that
+  // re-pins its header in JS mid-scroll, and the attribute + !important beats the
+  // page's own inline styles. Marking happens from the 2nd slice onward (see
+  // fpFreeze) so the first slice still shows the chrome once, at the top.
+  const style = document.createElement('style');
+  style.id = styleId;
+  style.textContent =
+    '*{scroll-behavior:auto !important}' + '[' + posAttr + ']{visibility:hidden !important}';
+  document.documentElement.appendChild(style);
+
+  // Background painted behind the composite (margins no slice covers, e.g. under
+  // a sidebar once its content is shorter than the tallest column).
+  let bg = '';
+  try {
+    bg = getComputedStyle(document.body || document.documentElement).backgroundColor;
+  } catch {
+    /* ignore */
+  }
+  if (!bg || bg === 'transparent' || bg === 'rgba(0, 0, 0, 0)') bg = '#ffffff';
+
+  // Collect every element that actually scrolls vertically and is big enough to
+  // be a real content region (not a tiny widget). Sort by visible area, desc.
+  const candidates = [];
+  for (const el of document.querySelectorAll('*')) {
+    if (el === document.documentElement || el === document.body) continue;
+    if (el.scrollHeight - el.clientHeight < 4) continue;
+    const oy = getComputedStyle(el).overflowY;
+    if (oy !== 'auto' && oy !== 'scroll' && oy !== 'overlay') continue;
+    const r = el.getBoundingClientRect();
+    const visW = Math.max(0, Math.min(r.right, vw) - Math.max(r.left, 0));
+    const visH = Math.max(0, Math.min(r.bottom, vh) - Math.max(r.top, 0));
+    if (visH < vh * minVh || visW * visH < vw * vh * minArea) continue;
+    candidates.push({ el, area: visW * visH, r });
+  }
+  candidates.sort((a, b) => b.area - a.area);
+
+  // Keep a disjoint set: drop any scroller nested inside (or containing) one we
+  // already kept, so the columns never overlap (largest wins → outermost).
+  const chosen = [];
+  for (const c of candidates) {
+    if (chosen.some((k) => k.el.contains(c.el) || c.el.contains(k.el))) continue;
+    chosen.push(c);
+  }
+
+  // PANE: one or more inner scrollers. Tag each (so a later step can re-find and
+  // scroll it), stash its scrollTop, and report its on-screen clip + content height.
+  if (chosen.length) {
+    const panes = chosen.map((c, i) => {
+      c.el.setAttribute(scrollerAttr, String(i));
+      c.el.setAttribute(topAttr, String(c.el.scrollTop));
+      const x = Math.max(0, c.r.left);
+      const y = Math.max(0, c.r.top);
+      return {
+        scrollH: c.el.scrollHeight,
+        clip: { x, y, w: Math.min(c.r.width, vw - x), h: Math.min(c.r.height, vh - y) },
+      };
+    });
+    return { mode: 'pane', panes, view, bg, dpr, origin };
+  }
+
+  // ROOT: the window scrolls. Fixed/sticky elements are hidden from the 2nd
+  // slice onward (fpFreeze) so a sticky header is photographed once, at the top.
+  const root = document.documentElement;
+  const bodyH = document.body ? document.body.scrollHeight : 0;
+  return {
+    mode: 'root',
+    scrollH: Math.max(root.scrollHeight, bodyH, vh),
+    clip: { x: 0, y: 0, w: vw, h: vh },
+    view,
+    bg,
+    dpr,
+    origin,
+  };
+}
+
+// Re-mark fixed/sticky elements the page may have pinned in JS during our scroll.
+// Scoped to the detected panes in pane mode (chrome stays as captured), whole
+// document in root mode.
+function fpFreeze(posAttr, scrollerAttr) {
+  const panes = document.querySelectorAll('[' + scrollerAttr + ']');
+  const scopes = panes.length ? panes : [document.documentElement];
+  for (const scope of scopes) {
+    for (const el of scope.querySelectorAll('*')) {
+      if (el.hasAttribute(posAttr)) continue;
+      const pos = getComputedStyle(el).position;
+      if (pos === 'fixed' || pos === 'sticky') el.setAttribute(posAttr, '1');
+    }
+  }
+}
+
+// Scroll the window to y; report the real position reached (clamped at the
+// bottom). Used in root mode.
+function fpScrollWindow(y) {
+  window.scrollTo(0, y);
+  return window.scrollY;
+}
+
+// Scroll each tagged pane to its target (targets[i] = scrollTop for pane i),
+// report the real positions reached. Panes move in lockstep, one snapshot/step.
+function fpScrollPanes(targets, scrollerAttr) {
+  const out = [];
+  for (let i = 0; i < targets.length; i++) {
+    const el = document.querySelector('[' + scrollerAttr + '="' + i + '"]');
+    if (el) {
+      el.scrollTop = targets[i];
+      out.push(el.scrollTop);
+    } else {
+      out.push(0);
+    }
+  }
+  return out;
+}
+
+// Undo fpPrep: drop the style, un-mark frozen elements, restore each pane's own
+// scrollTop, and return the window to its origin scroll.
+function fpRestore(styleId, posAttr, scrollerAttr, topAttr, origin) {
+  const style = document.getElementById(styleId);
+  if (style) style.remove();
+  for (const el of document.querySelectorAll('[' + posAttr + ']')) el.removeAttribute(posAttr);
+  for (const el of document.querySelectorAll('[' + scrollerAttr + ']')) {
+    const top = el.getAttribute(topAttr);
+    if (top != null) el.scrollTop = Number(top);
+    el.removeAttribute(scrollerAttr);
+    el.removeAttribute(topAttr);
+  }
+  window.scrollTo(origin.x, origin.y);
+}
+
+// captureVisibleTab is rate-limited (~2/s in Chrome). We already throttle
+// between slices; if we still hit the quota, back off once and retry.
+async function captureSlice(windowId) {
+  try {
+    return await dataUrlToBitmap(await api.tabs.captureVisibleTab(windowId, { format: 'png' }));
+  } catch (e) {
+    if (!/MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND/i.test(String(e?.message || e))) throw e;
+    await delay(SLICE_DELAY_MS);
+    return dataUrlToBitmap(await api.tabs.captureVisibleTab(windowId, { format: 'png' }));
+  }
+}
+
+async function captureFull() {
+  const cfg = await getConfig();
+  const [tab] = await api.tabs.query({ active: true, currentWindow: true });
+  if (!tab) throw new Error('no active tab');
+
+  const run = (func, args) => api.scripting.executeScript({ target: { tabId: tab.id }, func, args });
+
+  // Detect the scroller + prep the page. This is also the injectability probe
+  // (browser-internal pages reject it → FULL_UNAVAILABLE).
+  let info;
+  try {
+    [{ result: info }] = await run(fpPrep, [
+      FULLPAGE_STYLE_ID,
+      FULLPAGE_POS_ATTR,
+      FULLPAGE_SCROLLER_ATTR,
+      FULLPAGE_TOP_ATTR,
+      PANE_MIN_VH_RATIO,
+      PANE_MIN_AREA_RATIO,
+    ]);
+  } catch {
+    throw new Error(FULL_UNAVAILABLE);
+  }
+  if (!info) throw new Error(FULL_UNAVAILABLE);
+
+  const { mode, view, bg, dpr, origin } = info;
+  const pane = mode === 'pane';
+
+  // Normalize to a list of columns to unroll: root → one column scrolling the
+  // window; pane → one column per detected scroller, placed at its own x. Each
+  // column carries its content height and the chrome offset above it (clip.y).
+  const columns = pane
+    ? info.panes.map((p) => ({ clip: p.clip, scrollH: p.scrollH, contentTop: p.clip.y }))
+    : [{ clip: info.clip, scrollH: info.scrollH, contentTop: 0 }];
+
+  // Canvas: full viewport width (so the chrome/sidebar fits); height = the
+  // tallest unrolled column (shorter columns are padded with the page bg).
+  const physW = view.w * dpr;
+  const fullCssH = Math.max(view.h, ...columns.map((c) => c.contentTop + c.scrollH));
+  const physH = fullCssH * dpr;
+  const widthCap = cfg.maxEdge > 0 ? cfg.maxEdge / physW : 1;
+  const scale = Math.min(1, widthCap, MAX_CANVAS_PX / physW, MAX_CANVAS_PX / physH);
+  const canvasW = Math.max(1, Math.round(physW * scale));
+  const canvasH = Math.max(1, Math.round(physH * scale));
+  const fullDh = Math.round(view.h * dpr * scale); // a whole-viewport slice
+
+  const canvas = new OffscreenCanvas(canvasW, canvasH);
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = bg || '#ffffff'; // margins no slice covers (e.g. under a sidebar)
+  ctx.fillRect(0, 0, canvasW, canvasH);
+
+  // Per-column geometry (scaled physical px) + scroll bookkeeping.
+  const cols = columns.map((c) => ({
+    contentTop: c.contentTop,
+    stepH: Math.max(1, Math.round(c.clip.h)),
+    bottom: Math.max(0, c.scrollH - c.clip.h),
+    cropPx: {
+      x: Math.round(c.clip.x * dpr),
+      y: Math.round(c.clip.y * dpr),
+      w: Math.round(c.clip.w * dpr),
+      h: Math.round(c.clip.h * dpr),
+    },
+    dx: Math.round(c.clip.x * dpr * scale),
+    dw: Math.round(c.clip.w * dpr * scale),
+    dh: Math.round(c.clip.h * dpr * scale),
+    prevY: -1,
+    done: false,
+  }));
+
+  // Walk down one capture window at a time (all columns in lockstep), up to the
+  // heights snapshotted in fpPrep. Stop when no column can advance, or the slice
+  // cap is hit — never chasing content that lazy-loads while we scroll.
+  let truncated = false;
+  try {
+    for (let i = 0; ; i++) {
+      let realYs;
+      if (pane) {
+        const targets = cols.map((c) => Math.min(i * c.stepH, c.bottom));
+        [{ result: realYs }] = await run(fpScrollPanes, [targets, FULLPAGE_SCROLLER_ATTR]);
+      } else {
+        const [{ result: ry }] = await run(fpScrollWindow, [Math.min(i * cols[0].stepH, cols[0].bottom)]);
+        realYs = [ry];
+      }
+      await delay(SETTLE_MS); // let scroll-driven JS run (re-pinning, lazy content)
+      if (i > 0) {
+        // Hide the chrome the page may have (re)pinned during the settle, so it
+        // is captured only in the first slice. AFTER the settle, to win the race.
+        await run(fpFreeze, [FULLPAGE_POS_ATTR, FULLPAGE_SCROLLER_ATTR]).catch(() => {});
+        await delay(FREEZE_PAINT_MS);
+      }
+      const shot = await captureSlice(tab.windowId);
+
+      if (pane && i === 0) {
+        // First slice: the whole viewport → chrome (header/sidebar) + every
+        // column's first screen, captured once.
+        ctx.drawImage(shot, 0, 0, canvasW, fullDh);
+      } else if (pane) {
+        // Later slices: each still-advancing column, stacked in its own column.
+        for (let c = 0; c < cols.length; c++) {
+          if (cols[c].done) continue;
+          const sliceImg = await cropBitmap(shot, cols[c].cropPx, false); // shared shot → don't detach it
+          ctx.drawImage(
+            sliceImg,
+            cols[c].dx,
+            Math.round((cols[c].contentTop + realYs[c]) * dpr * scale),
+            cols[c].dw,
+            cols[c].dh,
+          );
+          sliceImg.close?.();
+        }
+      } else {
+        // Root mode: the whole viewport at its scroll offset.
+        ctx.drawImage(shot, 0, Math.round(realYs[0] * dpr * scale), canvasW, fullDh);
+      }
+      shot.close?.();
+
+      // Mark columns that reached the bottom (or stopped advancing); stop when
+      // none can advance, or the slice cap is hit.
+      let advancing = false;
+      for (let c = 0; c < cols.length; c++) {
+        const target = Math.min(i * cols[c].stepH, cols[c].bottom);
+        if (target >= cols[c].bottom || realYs[c] <= cols[c].prevY) cols[c].done = true;
+        else advancing = true;
+        cols[c].prevY = realYs[c];
+      }
+      if (!advancing) break;
+      if (i + 1 >= MAX_SLICES) {
+        truncated = true;
+        break;
+      }
+      await delay(SLICE_DELAY_MS);
+    }
+  } finally {
+    // Always restore, even if a slice threw mid-capture.
+    await run(fpRestore, [
+      FULLPAGE_STYLE_ID,
+      FULLPAGE_POS_ATTR,
+      FULLPAGE_SCROLLER_ATTR,
+      FULLPAGE_TOP_ATTR,
+      origin,
+    ]).catch(() => {});
+  }
+
+  const stitched = await createImageBitmap(canvas);
+  const { blob, mimeType } = await encode(stitched, cfg, 'skip'); // already sized
+  stitched.close?.();
+
+  const body = await blob.arrayBuffer();
+  const resp = await fetch(`${cfg.serverBase}/push`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': mimeType,
+      'X-Snapstack-Url': encodeURIComponent(tab.url ?? ''),
+      'X-Snapstack-Title': encodeURIComponent(tab.title ?? ''),
+    },
+    body,
+  });
+  if (!resp.ok) throw new Error(`server responded ${resp.status}`);
+  const { count } = await resp.json();
+  // No silent caps: tell the user when a too-long page was only partially captured.
+  if (truncated) await showNotification(api.i18n.getMessage('fullPageTruncated', [String(MAX_SLICES)]));
+  return count;
+}
+
+async function onTriggerFull() {
+  try {
+    const count = await captureFull();
+    flashOk(count);
+    return { ok: true, count };
+  } catch (e) {
+    if (String(e?.message) === FULL_UNAVAILABLE) {
+      await showNotification(api.i18n.getMessage('fullPageUnavailable'));
+      return { ok: false, error: 'full_unavailable' };
+    }
+    console.error('[snapstack] full-page capture failed:', e); // surface it in the worker console
+    await notifyError(e);
+    return { ok: false, error: String(e?.message || e) };
+  }
+}
+
 // --- server mutations (delegated by the popup) ----------------------------
 // Run here, not in the popup: a native confirm() or a new tab closes the popup,
 // and an in-flight fetch in a torn-down popup may be aborted. The worker is not
@@ -312,6 +704,9 @@ api.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
       return true;
     case 'capture-zone':
       onTriggerZone().then(sendResponse);
+      return true;
+    case 'capture-full':
+      onTriggerFull().then(sendResponse);
       return true;
     case 'clear':
       serverOp('POST', '/clear').then(sendResponse);

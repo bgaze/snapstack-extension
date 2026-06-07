@@ -7,6 +7,7 @@
   "toolbarCopyAll": { "message": "Copia tutti i percorsi" },
   "toolbarCapture": { "message": "Cattura" },
   "toolbarCaptureZone": { "message": "Cattura area" },
+  "toolbarCaptureFull": { "message": "Cattura pagina intera (sperimentale)" },
   "itemDelete": { "message": "Elimina" },
   "itemCopyPath": { "message": "Copia percorso" },
   "confirmDeleteAll": { "message": "Eliminare tutte le catture?" },
@@ -14,6 +15,11 @@
   "stackEmpty": { "message": "La pila è vuota." },
   "serverNotRunning": { "message": "Il server snapstack non è in esecuzione (http://127.0.0.1:4123)." },
   "zoneUnavailable": { "message": "La cattura dell'area non è disponibile in questa pagina." },
+  "fullPageUnavailable": { "message": "La cattura della pagina intera non è disponibile in questa pagina." },
+  "fullPageTruncated": {
+    "message": "Catturate le prime $count$ schermate: la pagina era troppo lunga per essere catturata per intero.",
+    "placeholders": { "count": { "content": "$1" } }
+  },
   "captureFailed": {
     "message": "Cattura non riuscita: $error$",
     "placeholders": { "error": { "content": "$1" } }

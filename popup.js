@@ -31,6 +31,9 @@ const ICONS = {
   camera:
     '<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>',
   crop: '<path d="M6.13 1L6 16a2 2 0 0 0 2 2h15"/><path d="M1 6.13L16 6a2 2 0 0 1 2 2v15"/>',
+  // Full page: a page outline with a top-to-bottom double arrow.
+  fullpage:
+    '<rect x="4" y="3" width="16" height="18" rx="2"/><polyline points="9 8 12 5 15 8"/><polyline points="9 16 12 19 15 16"/><line x1="12" y1="5" x2="12" y2="19"/>',
   check: '<polyline points="20 6 9 17 4 12"/>',
 };
 
@@ -85,16 +88,21 @@ function buildToolbar() {
   name.textContent = 'SnapStack';
   brand.append(logo, name);
 
-  // Actions (right) — order: delete-all · open folder · copy all · capture area · capture.
+  // Actions (right): stack tools · separator · the three capture modes.
+  // Capture order, right-to-left = normal · area · full page.
   const copyAllBtn = iconButton('copy', t('toolbarCopyAll'), () =>
     copyText(state.items.map((i) => i.path).join('\n'), copyAllBtn, 'copy'),
   );
+  const sep = document.createElement('span');
+  sep.className = 'sep';
   const actions = document.createElement('div');
   actions.className = 'actions';
   actions.append(
     iconButton('trash', t('toolbarDeleteAll'), onClearAll),
     iconButton('folder', t('toolbarOpenFolder'), onReveal),
     copyAllBtn,
+    sep,
+    iconButton('fullpage', t('toolbarCaptureFull'), onCaptureFull),
     iconButton('crop', t('toolbarCaptureZone'), onCaptureZone),
     iconButton('camera', t('toolbarCapture'), onCapture),
   );
@@ -130,6 +138,14 @@ async function onCapture() {
 // resyncs on its own once the capture lands.
 function onCaptureZone() {
   api.runtime.sendMessage({ type: 'capture-zone' });
+  window.close();
+}
+
+// Same hand-off as the zone capture: the background worker scrolls the page and
+// stitches the slices (a multi-second job), so close the popup immediately and
+// let the badge resync once the capture lands.
+function onCaptureFull() {
+  api.runtime.sendMessage({ type: 'capture-full' });
   window.close();
 }
 

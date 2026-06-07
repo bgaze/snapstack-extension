@@ -23,6 +23,10 @@
     "message": "Capture area",
     "description": "Toolbar button: select a rectangular area of the page to capture."
   },
+  "toolbarCaptureFull": {
+    "message": "Capture full page (experimental)",
+    "description": "Toolbar button: capture the entire scrollable page (scroll-and-stitch)."
+  },
   "itemDelete": {
     "message": "Delete",
     "description": "Per-image control: delete this capture."
@@ -50,6 +54,17 @@
   "zoneUnavailable": {
     "message": "Area capture isn't available on this page.",
     "description": "Notification when the selection overlay cannot be injected (e.g. browser-internal pages)."
+  },
+  "fullPageUnavailable": {
+    "message": "Full-page capture isn't available on this page.",
+    "description": "Notification when the full-page capture cannot run (e.g. browser-internal pages)."
+  },
+  "fullPageTruncated": {
+    "message": "Captured the first $count$ screens — the page was too long to capture in full.",
+    "description": "Notification when a very long / endless page hit the full-page slice cap.",
+    "placeholders": {
+      "count": { "content": "$1", "example": "50" }
+    }
   },
   "captureFailed": {
     "message": "Capture failed: $error$",

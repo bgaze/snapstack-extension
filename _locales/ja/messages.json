@@ -7,6 +7,7 @@
   "toolbarCopyAll": { "message": "すべてのパスをコピー" },
   "toolbarCapture": { "message": "キャプチャ" },
   "toolbarCaptureZone": { "message": "範囲をキャプチャ" },
+  "toolbarCaptureFull": { "message": "ページ全体をキャプチャ（実験的）" },
   "itemDelete": { "message": "削除" },
   "itemCopyPath": { "message": "パスをコピー" },
   "confirmDeleteAll": { "message": "すべてのキャプチャを削除しますか？" },
@@ -14,6 +15,11 @@
   "stackEmpty": { "message": "スタックは空です。" },
   "serverNotRunning": { "message": "snapstack サーバーが起動していません (http://127.0.0.1:4123)。" },
   "zoneUnavailable": { "message": "このページでは範囲キャプチャを利用できません。" },
+  "fullPageUnavailable": { "message": "このページではページ全体のキャプチャを利用できません。" },
+  "fullPageTruncated": {
+    "message": "最初の $count$ 画面分をキャプチャしました。ページが長すぎて全体をキャプチャできませんでした。",
+    "placeholders": { "count": { "content": "$1" } }
+  },
   "captureFailed": {
     "message": "キャプチャに失敗しました: $error$",
     "placeholders": { "error": { "content": "$1" } }

@@ -7,6 +7,7 @@
   "toolbarCopyAll": { "message": "复制所有路径" },
   "toolbarCapture": { "message": "截图" },
   "toolbarCaptureZone": { "message": "截取区域" },
+  "toolbarCaptureFull": { "message": "截取整个页面（实验性）" },
   "itemDelete": { "message": "删除" },
   "itemCopyPath": { "message": "复制路径" },
   "confirmDeleteAll": { "message": "删除所有截图？" },
@@ -14,6 +15,11 @@
   "stackEmpty": { "message": "堆栈为空。" },
   "serverNotRunning": { "message": "snapstack 服务器未运行 (http://127.0.0.1:4123)。" },
   "zoneUnavailable": { "message": "此页面无法使用区域截图。" },
+  "fullPageUnavailable": { "message": "此页面无法截取整个页面。" },
+  "fullPageTruncated": {
+    "message": "已截取前 $count$ 屏——页面过长，无法完整截取。",
+    "placeholders": { "count": { "content": "$1" } }
+  },
   "captureFailed": {
     "message": "截图失败：$error$",
     "placeholders": { "error": { "content": "$1" } }

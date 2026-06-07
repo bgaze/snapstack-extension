@@ -47,7 +47,16 @@ body {
 
 .actions {
   display: flex;
+  align-items: center;
   gap: 6px;
+}
+
+/* Divider between the stack tools and the capture buttons. */
+.actions .sep {
+  width: 1px;
+  align-self: stretch;
+  margin: 3px 3px;
+  background: #e5e7eb;
 }
 
 /* Only the image area scrolls. */
