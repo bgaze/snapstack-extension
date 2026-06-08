@@ -1,8 +1,8 @@
-# Privacy Policy — snapstack browser extension
+# Privacy Policy — SnapStack browser extension
 
 _Last updated: 2026-06-08_
 
-**Summary: snapstack collects no personal data and sends nothing to any remote server. Everything stays on your
+**Summary: SnapStack collects no personal data and sends nothing to any remote server. Everything stays on your
 machine.**
 
 ## What the extension does with data
@@ -12,7 +12,7 @@ When you explicitly take a capture (by clicking the extension or pressing the sh
 - the **image** of the visible browser tab, and
 - the tab's **URL, title, and a timestamp** (stored as metadata alongside the image).
 
-This data is sent **only** to the local snapstack server running on your own computer at `http://127.0.0.1`, which
+This data is sent **only** to the local SnapStack server running on your own computer at `http://127.0.0.1`, which
 writes it to a folder on your disk. From there, your local MCP client retrieves it on demand.
 
 ## What we do NOT do
@@ -30,7 +30,7 @@ The Firefox build declares this formally in its manifest: `data_collection_permi
 |----------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `activeTab`, `tabs`                    | Capture the visible tab's image and read its URL/title for the capture metadata.                                                                              |
 | `scripting`                            | Inject the selection overlay for area capture and the scroll/measure steps for full-page capture, into the tab you capture.                                   |
-| `host_permissions: http://127.0.0.1/*` | Send captures to, and load previews from, the **local** snapstack server. Localhost only.                                                                     |
+| `host_permissions: http://127.0.0.1/*` | Send captures to, and load previews from, the **local** SnapStack server. Localhost only.                                                                     |
 | `storage`                              | Save the local server's URL and a small server-compatibility flag locally. (The capture policy — format, quality, max width — lives on the server, not here.) |
 | `notifications`                        | Warn you when the local server is unreachable.                                                                                                                |
 | `alarms`                               | Periodically refresh the capture count shown on the toolbar badge.                                                                                            |

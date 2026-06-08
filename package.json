@@ -2,7 +2,7 @@
   "name": "snapstack-extension",
   "version": "1.0.0",
   "private": true,
-  "description": "snapstack MV3 browser extension — capture the visible tab and push it to the local snapstack server",
+  "description": "SnapStack MV3 browser extension — capture the visible tab and push it to the local SnapStack server",
   "license": "MIT",
   "type": "module",
   "scripts": {

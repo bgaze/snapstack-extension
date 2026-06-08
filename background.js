@@ -211,7 +211,7 @@ async function showNotification(message, id) {
     const opts = {
       type: 'basic',
       iconUrl: api.runtime.getURL('icons/icon-128.png'),
-      title: 'snapstack',
+      title: 'SnapStack',
       message,
     };
     // A stable id lets onClicked recognise this notification (and replaces any

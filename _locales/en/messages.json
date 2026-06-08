@@ -48,7 +48,7 @@
     "description": "Empty-state message in the dropdown."
   },
   "serverNotRunning": {
-    "message": "snapstack server is not running (http://127.0.0.1:4123).",
+    "message": "SnapStack server is not running (http://127.0.0.1:4123).",
     "description": "Shown when the local server cannot be reached."
   },
   "zoneUnavailable": {
@@ -74,7 +74,7 @@
     }
   },
   "serverOutdated": {
-    "message": "The snapstack server is out of date.",
+    "message": "The SnapStack server is out of date.",
     "description": "Notification + popup banner statement when the server's wire protocol is older than the extension (version skew)."
   },
   "serverOutdatedAction": {
@@ -86,7 +86,7 @@
     "description": "Toolbar button: open the extension's options page."
   },
   "optionsTitle": {
-    "message": "snapstack settings",
+    "message": "SnapStack settings",
     "description": "Title of the options page (browser tab + heading)."
   },
   "optionsSharedTitle": {
@@ -139,7 +139,7 @@
   },
   "optionsFieldServerBase": {
     "message": "Server address",
-    "description": "Options field label: local URL of the snapstack server."
+    "description": "Options field label: local URL of the SnapStack server."
   },
   "optionsFieldShortcut": {
     "message": "Capture shortcuts",
@@ -166,7 +166,7 @@
     "description": "Confirmation shown after settings are saved."
   },
   "optionsServerUnreachable": {
-    "message": "Server unreachable — start or update the snapstack server to edit the shared settings.",
+    "message": "Server unreachable — start or update the SnapStack server to edit the shared settings.",
     "description": "Shown when the shared (server) settings can't be loaded."
   },
   "optionsSaveError": {

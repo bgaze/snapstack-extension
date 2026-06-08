@@ -61,7 +61,7 @@ const { version } = manifest;
 await rm(dist, { recursive: true, force: true });
 await mkdir(dist, { recursive: true });
 
-console.log(`Packaging snapstack ${version}:`);
+console.log(`Packaging SnapStack ${version}:`);
 await buildTarget('chrome', chromeManifest(manifest), version);
 await buildTarget('firefox', firefoxManifest(manifest), version);
 console.log('Done.');
