@@ -103,13 +103,11 @@ claude mcp add --transport http --scope user snapstack http://127.0.0.1:4123/mcp
 
 ### 3. Install the extension
 
-<!-- TODO: replace the placeholder URLs once the stores approve the listings -->
-
-| Browser     | Install                                                                          |
-|-------------|----------------------------------------------------------------------------------|
-| **Chrome**  | [Chrome Web Store](https://CHROME_WEB_STORE_URL)                                 |
-| **Edge**    | [Edge Add-ons](https://EDGE_ADDONS_URL) *(or install from the Chrome Web Store)* |
-| **Firefox** | [Firefox Add-ons](https://FIREFOX_AMO_URL)                                       |
+| Browser     | Install |
+|-------------|---------|
+| **Chrome**  | [Chrome Web Store](https://chromewebstore.google.com/detail/ggpepmnkfmdignpnaedibnlalcfchmoc) |
+| **Edge**    | via the [Chrome Web Store](https://chromewebstore.google.com/detail/ggpepmnkfmdignpnaedibnlalcfchmoc) — Edge installs Chrome Web Store extensions |
+| **Firefox** | [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/snapstack/) |
 
 <details>
 <summary>Developer install (unpacked, from source)</summary>
