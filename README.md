@@ -19,7 +19,7 @@
 
 SnapStack lets you hand browser screenshots to your AI assistant without copy-pasting images.  
 Click the extension, your shot is stacked locally; ask your LLM to "look at my screenshots" and it picks them up
-over MCP.  
+over MCP.
 It works with any MCP-capable client (Claude Code and others).
 
 **SnapStack is 100% local.**  
@@ -88,22 +88,22 @@ The server speaks MCP over HTTP at **`http://127.0.0.1:4123/mcp`**.
 
 ### 3. Install the extension
 
-| Browser     | Install                                                                                                                                           |
-|-------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Chrome**  | [Chrome Web Store](https://chromewebstore.google.com/detail/ggpepmnkfmdignpnaedibnlalcfchmoc)                                                     |
-| **Edge**    | via the [Chrome Web Store](https://chromewebstore.google.com/detail/ggpepmnkfmdignpnaedibnlalcfchmoc) — Edge installs Chrome Web Store extensions |
-| **Firefox** | [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/snapstack/)                                                                            |
+| Browser     | Install                                                                                                                                   |
+|-------------|-------------------------------------------------------------------------------------------------------------------------------------------|
+| **Chrome**  | [Chrome Web Store](https://chromewebstore.google.com/detail/ggpepmnkfmdignpnaedibnlalcfchmoc)                                             |
+| **Edge**    | [Chrome Web Store](https://chromewebstore.google.com/detail/ggpepmnkfmdignpnaedibnlalcfchmoc) (Edge supports Chrome Web Store extensions) |
+| **Firefox** | [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/snapstack/)                                                                    |
 
 ## Exposed MCP tools
 
-Your LLM client uses these three tools — no image bytes are ever pushed to the model.
+Your LLM client uses these three tools — no image bytes are ever pushed to the model.  
 It gets a lightweight list and reads only the files it wants.
 
-| Tool                | What it does                                                                                                                                          |
-|---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `get_screenshots`   | Lists the pending captures (number, file path, size, page URL/title) — **read-only, never deletes**. Pass `numbers` (e.g. `[1,3]`) for specific ones. |
-| `clear_screenshots` | Removes captures from the stack — specific `numbers`, or all of them. **The only destructive tool.**                                                  |
-| `count_screenshots` | Just how many captures are waiting.                                                                                                                   |
+| Tool                | Read-only | What it does                                                                                                                                     |
+|---------------------|-----------|--------------------------------------------------------------------------------------------------------------------------------------------------|
+| `count_screenshots` | Yes       | Just how many captures are waiting.                                                                                                              |
+| `get_screenshots`   | Yes       | Lists the pending captures (number, file path, size, page URL/title).<br>Pass `numbers` (e.g. `[1,3]`) for specific ones, otherwise all of them. |
+| `clear_screenshots` | No        | Removes captures from the stack: **it's the only destructive tool.** <br>Pass `numbers` (e.g. `[1,3]`) for specific ones, otherwise all of them. |
 
 ## Use it with Claude
 
@@ -153,10 +153,10 @@ missing, tell the user and fall back to the manual path (paste image / give a fi
 
 ## Troubleshooting
 
-- **"Capture server not started"** — the local server isn't running. Start it (or check its auto-start);
+- **Capture server not started message:** the local server isn't running. Start it (or check its auto-start);
   see [snapstack-server](https://github.com/bgaze/snapstack-server).
-- **Red `!` badge** — the extension can't reach the server. Make sure it's running on `127.0.0.1:4123`.
-- **Captures saved as PNG** — your browser can't encode WebP, so SnapStack falls back to PNG automatically. Normal.
+- **Red exclamation badge:** the extension can't reach the server. Make sure it's running on `127.0.0.1:4123`.
+- **Captures saved as PNG:** your browser can't encode WebP, so SnapStack falls back to PNG automatically.
 
 ## Support
 
@@ -165,4 +165,5 @@ missing, tell the user and fall back to the manual path (paste image / give a fi
 
 ## Privacy & License
 
-No data collection, nothing leaves `127.0.0.1`. See [PRIVACY.md](./PRIVACY.md). MIT — see [LICENSE](./LICENSE).
+MIT, no data collection, nothing leaves your computer.  
+See [PRIVACY.md](./PRIVACY.md) & [LICENSE](./LICENSE).
