@@ -72,6 +72,9 @@ npm i -g snapstack-server
 snapstack enable
 ```
 
+> **Windows:** run these in an **Administrator** terminal (e.g. PowerShell *Run as administrator*) — the global npm
+> install and the scheduled-task registration need elevation, or they get rejected.
+
 Run `snapstack` any time for a status report (service + server health, update check).
 
 ### 2. Register SnapStack with your MCP client
