@@ -158,6 +158,11 @@ missing, tell the user and fall back to the manual path (paste image / give a fi
 - **Red `!` badge** — the extension can't reach the server. Make sure it's running on `127.0.0.1:4123`.
 - **Captures saved as PNG** — your browser can't encode WebP, so SnapStack falls back to PNG automatically. Normal.
 
+## Support
+
+- **A question or an idea?** → [GitHub Discussions](https://github.com/bgaze/snapstack-extension/discussions)
+- **Found a bug?** → [open an issue](https://github.com/bgaze/snapstack-extension/issues)
+
 ## Privacy & License
 
 No data collection, nothing leaves `127.0.0.1`. See [PRIVACY.md](./PRIVACY.md). MIT — see [LICENSE](./LICENSE).
