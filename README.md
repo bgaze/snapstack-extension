@@ -64,12 +64,15 @@ Three steps: **the server**, **your MCP client**, **this extension**.
 
 > [Node.js](https://nodejs.org) ≥ 18 required.
 
-The server ships on npm. One command installs it as a background tool that starts on login, restarts on crash, and
-updates itself on each launch — same on macOS, Linux and Windows:
+The server ships on npm. Install it globally, then enable it as a background tool that starts on login, restarts on
+crash, and updates itself on each launch — same on macOS, Linux and Windows:
 
 ```bash
-npx -y snapstack-server@latest install
+npm i -g snapstack-server
+snapstack enable
 ```
+
+Run `snapstack` any time for a status report (service + server health, update check).
 
 ### 2. Register SnapStack with your MCP client
 
@@ -91,12 +94,12 @@ claude mcp add --transport http --scope user snapstack http://127.0.0.1:4123/mcp
 }
 ```
 
-**Clients that only spawn a process** (stdio transport) — point them at the `snapstack-mcp` bin:
+**Clients that only spawn a process** (stdio transport) — point them at the `snapstack mcp` command:
 
 ```json
 {
   "mcpServers": {
-    "snapstack": { "command": "npx", "args": ["-y", "-p", "snapstack-server", "snapstack-mcp"] }
+    "snapstack": { "command": "npx", "args": ["-y", "-p", "snapstack-server", "snapstack", "mcp"] }
   }
 }
 ```
