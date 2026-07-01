@@ -1,15 +1,16 @@
 name: Publish
 
 # Builds the per-browser packages and uploads them to the stores when a version
-# tag is pushed (e.g. v1.2.0). Draft: each upload step is inert until its store
-# secrets are set. Stores then auto-update installed users. Edge is covered by
-# the Chrome Web Store (Edge can install from it) — no separate Edge job here.
+# tag is pushed (e.g. v1.2.0). Both stores are live, so a preflight fails the run
+# fast if any credential is missing — a release never half-publishes. Stores then
+# auto-update installed users. Edge is covered by the Chrome Web Store (Edge can
+# install from it) — no separate Edge job here.
 #
-# Required repo secrets:
+# Required repo secrets (all six):
 #   Chrome Web Store: CHROME_EXTENSION_ID, CHROME_CLIENT_ID, CHROME_CLIENT_SECRET,
 #                     CHROME_REFRESH_TOKEN
 #   Firefox AMO     : AMO_JWT_ISSUER, AMO_JWT_SECRET
-# Manual fallback if a store step is not wired yet: upload the built zips through each store's dashboard.
+# Manual fallback (bypass CI): upload the built zips through each store's dashboard.
 
 on:
   push:
@@ -27,6 +28,27 @@ jobs:
         with:
           node-version: 22
           cache: npm
+
+      # Fail fast with a clear message if any store credential is missing, so a
+      # tag never triggers a half-finished publish (Chrome up, Firefox down).
+      - name: Verify store credentials are set
+        env:
+          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+          CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+          CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+          AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
+          AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+        run: |
+          missing=
+          for v in CHROME_EXTENSION_ID CHROME_CLIENT_ID CHROME_CLIENT_SECRET CHROME_REFRESH_TOKEN AMO_JWT_ISSUER AMO_JWT_SECRET; do
+            if [ -z "${!v}" ]; then missing="$missing $v"; fi
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::Missing required store secrets:$missing"
+            exit 1
+          fi
+          echo "All six store credentials present."
       - run: npm ci
       - run: npm run lint
       # Emits dist/{chrome,firefox}/ + a per-browser zip (scripts/build.mjs).
