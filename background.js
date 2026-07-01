@@ -171,20 +171,9 @@ async function cropBitmap(bitmap, crop, closeSource = true) {
   return cropped;
 }
 
-// `crop` (image px) is optional: omitted → full visible tab; provided → the
-// captured frame is cropped to it before the usual encode/downscale/push.
-async function capture(crop) {
-  const cfg = await getConfig();
-
-  const [tab] = await api.tabs.query({ active: true, currentWindow: true });
-  if (!tab) throw new Error('no active tab');
-
-  const dataUrl = await api.tabs.captureVisibleTab(tab.windowId, { format: 'png' });
-  let bitmap = await dataUrlToBitmap(dataUrl);
-  if (crop) bitmap = await cropBitmap(bitmap, crop);
-  const { blob, mimeType } = await encode(bitmap, cfg);
-  bitmap.close?.();
-
+// POST an encoded image to the server, tagged with the tab's URL/title. Returns
+// the server's new pending count. Shared by all three capture modes.
+async function pushImage(blob, mimeType, tab, cfg) {
   const body = await blob.arrayBuffer();
   const resp = await fetch(`${cfg.serverBase}/push`, {
     method: 'POST',
@@ -198,6 +187,20 @@ async function capture(crop) {
   if (!resp.ok) throw new Error(`server responded ${resp.status}`);
   const { count } = await resp.json();
   return count;
+}
+
+// Plain visible-tab capture: photograph the active viewport, re-encode, push.
+async function capture() {
+  const cfg = await getConfig();
+
+  const [tab] = await api.tabs.query({ active: true, currentWindow: true });
+  if (!tab) throw new Error('no active tab');
+
+  const dataUrl = await api.tabs.captureVisibleTab(tab.windowId, { format: 'png' });
+  const bitmap = await dataUrlToBitmap(dataUrl);
+  const { blob, mimeType } = await encode(bitmap, cfg);
+  bitmap.close?.();
+  return pushImage(blob, mimeType, tab, cfg);
 }
 
 // --- feedback -------------------------------------------------------------
@@ -246,8 +249,12 @@ async function onTrigger() {
 
 // --- area-selection capture -----------------------------------------------
 // The popup is torn down the moment focus leaves it for the page, so the whole
-// zone flow lives here: inject the overlay, wait for the user to draw a
-// rectangle (or cancel), then crop the visible-tab capture to it.
+// zone flow lives here. FREEZE-FIRST: photograph the visible tab immediately —
+// while the page is still untouched (an open dropdown, a tooltip, a hover menu
+// are all still there) — then let the user draw the rectangle over that frozen
+// still and crop the shot we already took. Capturing on mouseup instead (the old
+// flow) photographed whatever the page had drifted to by the end of the gesture,
+// so a dropdown that closed on release was lost from the shot.
 const ZONE_UNAVAILABLE = '__zone_unavailable__';
 
 // Resolve with the 'zone-selected' message, or null if the user cancelled.
@@ -276,18 +283,38 @@ function cropFromSelection(sel) {
 }
 
 async function captureZone() {
+  const cfg = await getConfig();
   const [tab] = await api.tabs.query({ active: true, currentWindow: true });
   if (!tab) throw new Error('no active tab');
+
+  // Freeze the page NOW, before any selection UI touches it.
+  const dataUrl = await api.tabs.captureVisibleTab(tab.windowId, { format: 'png' });
+
+  // Inject the overlay; this doubles as the injectability probe — browser-internal
+  // pages (chrome://, the web store, the PDF viewer, …) reject it, and there is no
+  // page to draw on.
   try {
     await api.scripting.executeScript({ target: { tabId: tab.id }, files: ['overlay.js'] });
   } catch {
-    // Browser-internal pages (chrome://, the web store, the PDF viewer, …) reject
-    // injection — there is no page to draw on.
     throw new Error(ZONE_UNAVAILABLE);
   }
+  // Hand the frozen still to the overlay to paint as its backdrop, so the user
+  // selects on exactly the pixels we captured. executeScript resolves only after
+  // overlay.js has run, so its message listener is already live.
+  try {
+    await api.tabs.sendMessage(tab.id, { type: 'zone-still', img: dataUrl });
+  } catch {
+    /* overlay torn down early (a fast Escape) — waitForZone settles it below */
+  }
+
   const sel = await waitForZone();
   if (!sel) return null; // cancelled — no capture
-  return capture(cropFromSelection(sel));
+
+  // Crop the shot we already took — no second captureVisibleTab.
+  const bitmap = await cropBitmap(await dataUrlToBitmap(dataUrl), cropFromSelection(sel));
+  const { blob, mimeType } = await encode(bitmap, cfg);
+  bitmap.close?.();
+  return pushImage(blob, mimeType, tab, cfg);
 }
 
 async function onTriggerZone() {
@@ -658,18 +685,7 @@ async function captureFull() {
   const { blob, mimeType } = await encode(stitched, cfg, 'skip'); // already sized
   stitched.close?.();
 
-  const body = await blob.arrayBuffer();
-  const resp = await fetch(`${cfg.serverBase}/push`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': mimeType,
-      'X-Snapstack-Url': encodeURIComponent(tab.url ?? ''),
-      'X-Snapstack-Title': encodeURIComponent(tab.title ?? ''),
-    },
-    body,
-  });
-  if (!resp.ok) throw new Error(`server responded ${resp.status}`);
-  const { count } = await resp.json();
+  const count = await pushImage(blob, mimeType, tab, cfg);
   // No silent caps: tell the user when a too-long page was only partially captured.
   if (truncated) await showNotification(api.i18n.getMessage('fullPageTruncated', [String(cfg.maxSlices)]));
   return count;
